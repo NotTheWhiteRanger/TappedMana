@@ -14,6 +14,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+
 const firebaseConfig = {
   apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
   authDomain: "new-chat-8d4f4.firebaseapp.com",
