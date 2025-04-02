@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>MTG Commander Online</title>
+  <!-- Make sure these files exist in the same directory -->
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="main.js"></script>
 </head>
@@ -22,30 +23,25 @@
   <div id="game-board" class="hidden">
     <!-- Player Info Panel -->
     <div id="players-area">
-      <!-- This will dynamically show each player's name, life total, and commander damage -->
+      <!-- Dynamically generated player panels (name, life, commander damage) -->
     </div>
     
     <!-- Game Zones -->
     <div id="game-zones">
       <div id="stack-zone">
         <h3>Stack</h3>
-        <!-- Stack content will go here -->
       </div>
       <div id="battlefield-zone">
         <h3>Battlefield</h3>
-        <!-- Cards on the battlefield will be shown here -->
       </div>
       <div id="command-zone">
         <h3>Command Zone</h3>
-        <!-- Commanders and command zone actions -->
       </div>
       <div id="graveyard-zone">
         <h3>Graveyards</h3>
-        <!-- Each player's graveyard area -->
       </div>
       <div id="exile-zone">
         <h3>Exile</h3>
-        <!-- Exiled cards will be shown here -->
       </div>
     </div>
     
