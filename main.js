@@ -11,9 +11,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import {
   getAuth,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signInAnonymously
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
@@ -28,6 +28,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
+
+// Sign in anonymously if not already signed in
+signInAnonymously(auth).catch(error => {
+  console.error("Anonymous sign-in failed:", error);
+});
 
 let currentRoom = null;
 let currentUserId = null;
@@ -68,18 +73,19 @@ function renderAllPlayers(players) {
         ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
       </div>
       <div class="hand-view">
-        ${isYou ? (data.hand || []).map((card, index) => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`).join('') : (data.hand || []).map(() => `<img src="/card-back.jpg" alt="Card Back" />`).join('')}
+        ${isYou ? (data.hand || []).map((card, index) => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`).join('') 
+                : (data.hand || []).map(() => `<img src="/card-back.jpg" alt="Card Back" />`).join('')}
       </div>
     `;
     area.appendChild(panel);
   });
-  attachPlayCardListeners(players);
+  attachPlayCardListeners();
 }
 
-function attachPlayCardListeners(players) {
+function attachPlayCardListeners() {
   const handCards = document.querySelectorAll('.hand-card');
   handCards.forEach(cardImg => {
-    cardImg.addEventListener('click', async (e) => {
+    cardImg.addEventListener('click', async () => {
       const index = parseInt(cardImg.getAttribute('data-index'));
       const userRef = ref(db, `rooms/${currentRoom}/players/${currentUserId}`);
       const snap = await get(userRef);
@@ -184,6 +190,7 @@ function setupUIEvents() {
   }
 }
 
+// Wait for authentication to complete then set up UI events
 onAuthStateChanged(auth, user => {
   if (user) {
     setupUIEvents();
