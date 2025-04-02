@@ -3,29 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <title>MTG Commander Online</title>
-  <!-- Make sure these files exist in the same directory -->
   <link rel="stylesheet" href="styles.css">
+  <!-- Firebase SDKs -->
+  <script type="module">
+    // Import Firebase and initialize app
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginPage = document.getElementById('login-page');
+      const lobby = document.getElementById('game-lobby');
+      const gameBoard = document.getElementById('game-board');
+
+      const loginForm = document.getElementById('login-form');
+
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = loginForm.email.value;
+        const password = loginForm.password.value;
+
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            loginPage.style.display = 'none';
+            lobby.style.display = 'block';
+          })
+          .catch((error) => {
+            alert("Login failed: " + error.message);
+          });
+      });
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loginPage.style.display = 'none';
+          lobby.style.display = 'block';
+        } else {
+          loginPage.style.display = 'block';
+          lobby.style.display = 'none';
+          gameBoard.style.display = 'none';
+        }
+      });
+    });
+  </script>
   <script type="module" src="main.js"></script>
 </head>
 <body>
-  <!-- Room Code Display -->
-  <div id="room-code" class="overlay hidden"></div>
-  
+  <!-- Room Code Overlay -->
+  <div id="room-code" class="overlay hidden" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.5); color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 14px; z-index: 1000; display: none;"></div>
+
+  <!-- Login Page -->
+  <div id="login-page" style="padding: 20px;">
+    <h1>Login to MTG Commander Online</h1>
+    <form id="login-form">
+      <input type="email" name="email" placeholder="Email" required><br><br>
+      <input type="password" name="password" placeholder="Password" required><br><br>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
   <!-- Game Lobby -->
-  <div id="game-lobby">
-    <h1>MTG Commander Online</h1>
+  <div id="game-lobby" style="display:none;">
+    <h1>Welcome to MTG Commander Online</h1>
     <button id="create-game">Create Game</button>
     <input type="text" id="game-code" placeholder="Enter Game Code">
     <button id="join-game">Join Game</button>
   </div>
-  
+
   <!-- Main Game Board -->
-  <div id="game-board" class="hidden">
+  <div id="game-board" style="display:none;">
     <!-- Player Info Panel -->
     <div id="players-area">
-      <!-- Dynamically generated player panels (name, life, commander damage) -->
+      <!-- Player info will be dynamically added -->
     </div>
-    
+
     <!-- Game Zones -->
     <div id="game-zones">
       <div id="stack-zone">
@@ -44,13 +105,11 @@
         <h3>Exile</h3>
       </div>
     </div>
-    
+
     <!-- Player Hand -->
     <div id="player-hand">
       <h2>Your Hand</h2>
-      <div id="hand-cards">
-        <!-- Your hand cards will appear here -->
-      </div>
+      <div id="hand-cards"></div>
       <button id="draw-card">Draw Card</button>
     </div>
   </div>
