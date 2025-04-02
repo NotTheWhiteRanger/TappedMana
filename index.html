@@ -4,22 +4,20 @@
   <meta charset="UTF-8">
   <title>MTG Commander Online</title>
   <link rel="stylesheet" href="styles.css">
+
   <!-- Firebase SDKs -->
   <script type="module">
-    // Import Firebase and initialize app
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-      // Firebase configuration (same as your main website)
-      const firebaseConfig = {
-        apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
-        authDomain: "new-chat-8d4f4.firebaseapp.com",
-        databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
-        projectId: "new-chat-8d4f4",
-        storageBucket: "new-chat-8d4f4.firebasestorage.app",
-        messagingSenderId: "825077448854",
-        appId: "1:825077448854:web:3906174c00e1f6604782b7"
-      };
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -37,9 +35,9 @@
         const password = loginForm.password.value;
 
         signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            loginPage.style.display = 'none';
-            lobby.style.display = 'block';
+          .then(() => {
+            loginPage.classList.add('hidden');
+            lobby.classList.remove('hidden');
           })
           .catch((error) => {
             alert("Login failed: " + error.message);
@@ -48,24 +46,28 @@
 
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          loginPage.style.display = 'none';
-          lobby.style.display = 'block';
+          loginPage.classList.add('hidden');
+          lobby.classList.remove('hidden');
         } else {
-          loginPage.style.display = 'block';
-          lobby.style.display = 'none';
-          gameBoard.style.display = 'none';
+          loginPage.classList.remove('hidden');
+          lobby.classList.add('hidden');
+          gameBoard.classList.add('hidden');
         }
       });
     });
   </script>
+
+  <!-- Your game logic -->
   <script type="module" src="main.js"></script>
 </head>
 <body>
-  <!-- Room Code Overlay -->
-  <div id="room-code" class="overlay hidden" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.5); color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 14px; z-index: 1000; display: none;"></div>
+  <!-- Room Code Display -->
+  <div id="room-code" class="overlay hidden" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.5); color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 14px; z-index: 1000;">
+    <!-- Will be filled by JS -->
+  </div>
 
   <!-- Login Page -->
-  <div id="login-page" style="padding: 20px;">
+  <div id="login-page">
     <h1>Login to MTG Commander Online</h1>
     <form id="login-form">
       <input type="email" name="email" placeholder="Email" required><br><br>
@@ -75,7 +77,7 @@
   </div>
 
   <!-- Game Lobby -->
-  <div id="game-lobby" style="display:none;">
+  <div id="game-lobby" class="hidden">
     <h1>Welcome to MTG Commander Online</h1>
     <button id="create-game">Create Game</button>
     <input type="text" id="game-code" placeholder="Enter Game Code">
@@ -83,7 +85,7 @@
   </div>
 
   <!-- Main Game Board -->
-  <div id="game-board" style="display:none;">
+  <div id="game-board" class="hidden">
     <!-- Player Info Panel -->
     <div id="players-area">
       <!-- Player info will be dynamically added -->
