@@ -1,34 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>MTG Commander Online</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Firebase SDKs and our main JS file (using ES modules) -->
   <script type="module" src="main.js"></script>
 </head>
 <body>
-  <!-- Room code overlay -->
-  <div id="room-code" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.5); color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 14px; z-index: 1000; display: none;"></div>
+  <!-- Room Code Display -->
+  <div id="room-code" class="overlay hidden"></div>
   
+  <!-- Game Lobby -->
   <div id="game-lobby">
-    <h1>Welcome to MTG Commander Online</h1>
+    <h1>MTG Commander Online</h1>
     <button id="create-game">Create Game</button>
     <input type="text" id="game-code" placeholder="Enter Game Code">
     <button id="join-game">Join Game</button>
   </div>
   
-  <!-- Game board to be displayed once a game starts -->
-  <div id="game-board" style="display:none;">
-    <!-- Play Area: Players can click or drop a card here -->
-    <div id="play-area">
-      <p>Click or drag your card here to play it.</p>
+  <!-- Main Game Board -->
+  <div id="game-board" class="hidden">
+    <!-- Player Info Panel -->
+    <div id="players-area">
+      <!-- This will dynamically show each player's name, life total, and commander damage -->
     </div>
     
-    <!-- Player Hand: Shows the cards in the player's hand -->
+    <!-- Game Zones -->
+    <div id="game-zones">
+      <div id="stack-zone">
+        <h3>Stack</h3>
+        <!-- Stack content will go here -->
+      </div>
+      <div id="battlefield-zone">
+        <h3>Battlefield</h3>
+        <!-- Cards on the battlefield will be shown here -->
+      </div>
+      <div id="command-zone">
+        <h3>Command Zone</h3>
+        <!-- Commanders and command zone actions -->
+      </div>
+      <div id="graveyard-zone">
+        <h3>Graveyards</h3>
+        <!-- Each player's graveyard area -->
+      </div>
+      <div id="exile-zone">
+        <h3>Exile</h3>
+        <!-- Exiled cards will be shown here -->
+      </div>
+    </div>
+    
+    <!-- Player Hand -->
     <div id="player-hand">
       <h2>Your Hand</h2>
-      <div id="hand-cards"></div>
+      <div id="hand-cards">
+        <!-- Your hand cards will appear here -->
+      </div>
       <button id="draw-card">Draw Card</button>
     </div>
   </div>
