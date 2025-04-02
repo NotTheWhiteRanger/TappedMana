@@ -1,117 +1,145 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const createGameButton = document.getElementById('create-game');
-  const joinGameButton = document.getElementById('join-game');
-  const gameLobby = document.getElementById('game-lobby');
-  const gameBoard = document.getElementById('game-board');
-  const roomCodeDisplay = document.getElementById('room-code');
-  const drawCardButton = document.getElementById('draw-card');
-  const handCardsContainer = document.getElementById('hand-cards');
+// Multiplayer MTG Commander Online - Firebase Sync & UI
 
-  // Sample players array
-  let players = [
-    { id: 1, name: "You", life: 40, commanderDamage: {} },
-    { id: 2, name: "Player 2", life: 40, commanderDamage: {} },
-    { id: 3, name: "Player 3", life: 40, commanderDamage: {} },
-    { id: 4, name: "Player 4", life: 40, commanderDamage: {} },
-  ];
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+  update,
+  push,
+  get,
+  child
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
-    authDomain: "new-chat-8d4f4.firebaseapp.com",
-    databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
-    projectId: "new-chat-8d4f4",
-    storageBucket: "new-chat-8d4f4.firebasestorage.app",
-    messagingSenderId: "825077448854",
-    appId: "1:825077448854:web:3906174c00e1f6604782b7"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
+  authDomain: "new-chat-8d4f4.firebaseapp.com",
+  databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
+  projectId: "new-chat-8d4f4",
+  storageBucket: "new-chat-8d4f4.firebasestorage.app",
+  messagingSenderId: "825077448854",
+  appId: "1:825077448854:web:3906174c00e1f6604782b7"
+};
 
-  // Draw and display 7 random cards using Scryfall API
-  async function drawOpeningHand() {
-    handCardsContainer.innerHTML = '';
-    try {
-      const res = await fetch('https://api.scryfall.com/cards/random?q=game:paper');
-      const hand = await Promise.all(Array.from({ length: 7 }, () =>
-        fetch('https://api.scryfall.com/cards/random?q=game:paper').then(res => res.json())
-      ));
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
 
-      hand.forEach(card => {
-        const img = document.createElement('img');
-        img.src = card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || '';
-        img.alt = card.name;
-        img.title = card.name;
-        img.style.width = '80px';
-        img.style.margin = '4px';
-        handCardsContainer.appendChild(img);
-      });
-    } catch (err) {
-      console.error("Failed to fetch Scryfall cards:", err);
-    }
+let currentRoom = null;
+let currentUserId = null;
+let currentUserName = "Player" + Math.floor(Math.random() * 1000);
+
+function generateRoomCode() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function getCardImage(card) {
+  return card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || "";
+}
+
+async function drawCards(count = 1) {
+  const cards = [];
+  for (let i = 0; i < count; i++) {
+    const res = await fetch('https://api.scryfall.com/cards/random?q=game:paper');
+    cards.push(await res.json());
   }
+  return cards;
+}
 
-  function updatePlayersArea() {
-    const playersArea = document.getElementById('players-area');
-    playersArea.innerHTML = '';
-    players.forEach(player => {
-      const playerDiv = document.createElement('div');
-      playerDiv.classList.add('player-panel');
-      playerDiv.innerHTML = `
-        <h3>${player.name}</h3>
-        <p>Life: <span id="life-${player.id}">${player.life}</span></p>
-        <p>Commander Damage: <span id="damage-${player.id}">None</span></p>
-      `;
-      playersArea.appendChild(playerDiv);
-    });
+function renderAllPlayers(players) {
+  const area = document.getElementById('players-area');
+  area.innerHTML = '';
+
+  Object.entries(players).forEach(([uid, data]) => {
+    const panel = document.createElement('div');
+    panel.classList.add('player-panel');
+    panel.innerHTML = `
+      <h3>${data.name}</h3>
+      <p>Life: ${data.life || 40}</p>
+      <div class="battlefield">
+        ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" />`).join('')}
+      </div>
+    `;
+    area.appendChild(panel);
+  });
+}
+
+function setupRealtimeUpdates(roomCode) {
+  const roomRef = ref(db, `rooms/${roomCode}/players`);
+  onValue(roomRef, snapshot => {
+    const players = snapshot.val() || {};
+    renderAllPlayers(players);
+  });
+}
+
+async function joinGameRoom(roomCode) {
+  currentRoom = roomCode;
+  const user = auth.currentUser;
+  if (!user) return;
+
+  currentUserId = user.uid;
+  const playerRef = ref(db, `rooms/${roomCode}/players/${currentUserId}`);
+
+  const openingHand = await drawCards(7);
+  await set(playerRef, {
+    name: currentUserName,
+    hand: openingHand,
+    battlefield: [],
+    graveyard: [],
+    exile: [],
+    commandZone: [],
+    life: 40
+  });
+
+  setupRealtimeUpdates(roomCode);
+}
+
+function setupUIEvents() {
+  document.getElementById('create-game').addEventListener('click', async () => {
+    const roomCode = generateRoomCode();
+    document.getElementById('room-code').textContent = `Room Code: ${roomCode}`;
+    document.getElementById('room-code').classList.remove('hidden');
+
+    document.getElementById('game-lobby').classList.add('hidden');
+    document.getElementById('game-board').classList.remove('hidden');
+
+    await joinGameRoom(roomCode);
+  });
+
+  document.getElementById('join-game').addEventListener('click', async () => {
+    const code = document.getElementById('game-code').value.trim().toUpperCase();
+    if (!code) return alert('Enter a valid game code.');
+
+    document.getElementById('room-code').textContent = `Room Code: ${code}`;
+    document.getElementById('room-code').classList.remove('hidden');
+
+    document.getElementById('game-lobby').classList.add('hidden');
+    document.getElementById('game-board').classList.remove('hidden');
+
+    await joinGameRoom(code);
+  });
+
+  document.getElementById('draw-card').addEventListener('click', async () => {
+    if (!currentRoom || !currentUserId) return;
+    const card = (await drawCards(1))[0];
+
+    const userRef = ref(db, `rooms/${currentRoom}/players/${currentUserId}`);
+    const snap = await get(userRef);
+    const data = snap.val();
+
+    const newHand = data.hand || [];
+    newHand.push(card);
+    await update(userRef, { hand: newHand });
+  });
+}
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    setupUIEvents();
   }
-
-  createGameButton.addEventListener('click', async () => {
-    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    roomCodeDisplay.textContent = `Room Code: ${roomCode}`;
-    roomCodeDisplay.classList.remove('hidden');
-
-    gameLobby.classList.add('hidden');
-    gameBoard.classList.remove('hidden');
-
-    updatePlayersArea();
-    await drawOpeningHand();
-
-    console.log('Game created with room code:', roomCode);
-  });
-
-  joinGameButton.addEventListener('click', async () => {
-    const gameCodeInput = document.getElementById('game-code').value.trim();
-    if (!gameCodeInput) {
-      alert('Please enter a game code to join.');
-      return;
-    }
-
-    roomCodeDisplay.textContent = `Room Code: ${gameCodeInput.toUpperCase()}`;
-    roomCodeDisplay.classList.remove('hidden');
-
-    gameLobby.classList.add('hidden');
-    gameBoard.classList.remove('hidden');
-
-    updatePlayersArea();
-    await drawOpeningHand();
-
-    console.log('Joining game with room code:', gameCodeInput);
-  });
-
-  drawCardButton.addEventListener('click', async () => {
-    try {
-      const res = await fetch('https://api.scryfall.com/cards/random?q=game:paper');
-      const card = await res.json();
-      const img = document.createElement('img');
-      img.src = card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || '';
-      img.alt = card.name;
-      img.title = card.name;
-      img.style.width = '80px';
-      img.style.margin = '4px';
-      handCardsContainer.appendChild(img);
-
-      console.log(`Drew card: ${card.name}`);
-    } catch (err) {
-      console.error("Failed to draw card:", err);
-    }
-  });
 });
