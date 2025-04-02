@@ -1,4 +1,3 @@
-// Multiplayer MTG Commander Online - Firebase Sync & UI
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
@@ -56,13 +55,19 @@ function renderAllPlayers(players) {
   area.innerHTML = '';
 
   Object.entries(players).forEach(([uid, data]) => {
+    const isYou = uid === currentUserId;
     const panel = document.createElement('div');
-    panel.classList.add('player-panel');
+    panel.classList.add('player-zone');
     panel.innerHTML = `
-      <h3>${data.name}</h3>
-      <p>Life: ${data.life || 40}</p>
+      <div class="player-header">
+        <h3>${data.name}${isYou ? ' (You)' : ''}</h3>
+        <p>Life: ${data.life || 40}</p>
+      </div>
       <div class="battlefield">
-        ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" />`).join('')}
+        ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
+      </div>
+      <div class="hand-view">
+        ${isYou ? (data.hand || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('') : (data.hand || []).map(() => `<img src="/card-back.jpg" alt="Card Back" />`).join('')}
       </div>
     `;
     area.appendChild(panel);
