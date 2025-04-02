@@ -1,3 +1,4 @@
+// Multiplayer MTG Commander Online - Firebase Sync, UI, & Battlefield Interaction
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
@@ -6,9 +7,7 @@ import {
   onValue,
   set,
   update,
-  push,
-  get,
-  child
+  get
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import {
   getAuth,
@@ -32,6 +31,7 @@ const auth = getAuth(app);
 let currentRoom = null;
 let currentUserId = null;
 let currentUserName = "Player" + Math.floor(Math.random() * 1000);
+let gamePhase = "Beginning";
 
 function generateRoomCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -67,10 +67,32 @@ function renderAllPlayers(players) {
         ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
       </div>
       <div class="hand-view">
-        ${isYou ? (data.hand || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('') : (data.hand || []).map(() => `<img src="/card-back.jpg" alt="Card Back" />`).join('')}
+        ${isYou ? (data.hand || []).map((card, index) => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`).join('') : (data.hand || []).map(() => `<img src="/card-back.jpg" alt="Card Back" />`).join('')}
       </div>
     `;
     area.appendChild(panel);
+  });
+  attachPlayCardListeners(players);
+}
+
+function attachPlayCardListeners(players) {
+  const handCards = document.querySelectorAll('.hand-card');
+  handCards.forEach(cardImg => {
+    cardImg.addEventListener('click', async (e) => {
+      const index = parseInt(cardImg.getAttribute('data-index'));
+      const userRef = ref(db, `rooms/${currentRoom}/players/${currentUserId}`);
+      const snap = await get(userRef);
+      const data = snap.val();
+
+      const hand = data.hand || [];
+      const battlefield = data.battlefield || [];
+
+      if (hand[index]) {
+        battlefield.push(hand[index]);
+        hand.splice(index, 1);
+        await update(userRef, { hand, battlefield });
+      }
+    });
   });
 }
 
@@ -79,6 +101,13 @@ function setupRealtimeUpdates(roomCode) {
   onValue(roomRef, snapshot => {
     const players = snapshot.val() || {};
     renderAllPlayers(players);
+  });
+
+  const phaseRef = ref(db, `rooms/${roomCode}/phase`);
+  onValue(phaseRef, snapshot => {
+    const phaseDisplay = document.getElementById('phase-display');
+    gamePhase = snapshot.val() || "Beginning";
+    if (phaseDisplay) phaseDisplay.textContent = `Phase: ${gamePhase}`;
   });
 }
 
@@ -101,6 +130,7 @@ async function joinGameRoom(roomCode) {
     life: 40
   });
 
+  await set(ref(db, `rooms/${roomCode}/phase`), "Beginning");
   setupRealtimeUpdates(roomCode);
 }
 
@@ -141,6 +171,16 @@ function setupUIEvents() {
     newHand.push(card);
     await update(userRef, { hand: newHand });
   });
+
+  const phaseButton = document.getElementById('next-phase');
+  if (phaseButton) {
+    phaseButton.addEventListener('click', async () => {
+      const phases = ["Beginning", "Main", "Combat", "Second Main", "End"];
+      const currentIndex = phases.indexOf(gamePhase);
+      const nextPhase = phases[(currentIndex + 1) % phases.length];
+      await set(ref(db, `rooms/${currentRoom}/phase`), nextPhase);
+    });
+  }
 }
 
 onAuthStateChanged(auth, user => {
