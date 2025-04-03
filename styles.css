@@ -15,7 +15,7 @@
   z-index: 1000;
 }
 
-/* Basic page styling */
+/* Base styling */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -23,11 +23,55 @@ body {
   color: #f0f0f0;
 }
 
-/* Layout for Login and Lobby pages */
 #login-page,
 #game-lobby {
   text-align: center;
   margin-top: 50px;
+}
+
+/* Game board layout for different player counts */
+#game-board {
+  padding: 20px;
+}
+
+/* Example layout for 2 players */
+.players-2 {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr;
+}
+
+/* Example layout for 3 players */
+.players-3 {
+  display: grid;
+  grid-template-areas:
+    "player1 player2"
+    "player3 player3";
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+/* Example layout for 4 players (classic Commander layout) */
+.players-4 {
+  display: grid;
+  grid-template-areas:
+    "player1 game"
+    "player2 game"
+    "player3 game"
+    "player4 game";
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: repeat(4, auto);
+}
+
+/* Example layout for 5 players (circular-ish layout) */
+.players-5 {
+  display: grid;
+  grid-template-areas:
+    "player1 game player2"
+    "player3 game player4"
+    "player5 game game";
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-rows: auto auto auto;
 }
 
 /* Player zone styling */
