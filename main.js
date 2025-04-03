@@ -137,21 +137,23 @@ async function joinGameRoom(roomCode) {
 }
 
 function setupUIEvents() {
-  // Use a guard that checks for the overall game board container
-  if (!document.getElementById('game-board')) {
-    return;
-  }
+  // Guard: only run if the game board exists
+  if (!document.getElementById('game-board')) return;
 
   // If URL contains a room parameter, we're in game board mode.
   if (queryParams.room) {
     const roomCode = queryParams.room;
     const playerCount = queryParams.players || "4";
     const boardContainer = document.getElementById('board-container');
-    boardContainer.classList.remove('players-2','players-3','players-4','players-5');
-    boardContainer.classList.add(`players-${playerCount}`);
+    if (boardContainer) {
+      boardContainer.classList.remove('players-2','players-3','players-4','players-5');
+      boardContainer.classList.add(`players-${playerCount}`);
+    }
     const roomCodeOverlay = document.getElementById('room-code');
-    roomCodeOverlay.textContent = `Room Code: ${roomCode}`;
-    roomCodeOverlay.classList.remove('hidden');
+    if (roomCodeOverlay) {
+      roomCodeOverlay.textContent = `Room Code: ${roomCode}`;
+      roomCodeOverlay.classList.remove('hidden');
+    }
     joinGameRoom(roomCode);
   }
 
@@ -180,8 +182,11 @@ function setupUIEvents() {
   }
 }
 
-onAuthStateChanged(auth, user => {
-  if (user) {
-    setupUIEvents();
-  }
+// Wait until DOM is fully loaded before setting up UI events.
+document.addEventListener('DOMContentLoaded', () => {
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      setupUIEvents();
+    }
+  });
 });
