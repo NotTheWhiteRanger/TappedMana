@@ -29,27 +29,46 @@ async function drawCards(count = 1) {
   return cards;
 }
 
+// Render each player's full board (their "fields")
 function renderAllPlayers(players) {
   const area = document.getElementById('players-area');
   area.innerHTML = '';
   Object.entries(players).forEach(([uid, data]) => {
     const isYou = uid === currentUserId;
-    const panel = document.createElement('div');
-    panel.classList.add('player-zone');
-    panel.innerHTML = `
+    const board = document.createElement('div');
+    board.classList.add('player-board');
+    board.innerHTML = `
       <div class="player-header">
         <h3>${data.name}${isYou ? ' (You)' : ''}</h3>
         <p>Life: ${data.life || 40}</p>
       </div>
-      <div class="battlefield">
-        ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
-      </div>
-      <div class="hand-view">
-        ${isYou ? (data.hand || []).map((card, index) => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`).join('')
-                 : (data.hand || []).map(() => `<img src="card-back.jpg" alt="Card Back" />`).join('')}
+      <div class="player-fields">
+        <div class="zone command-zone">
+          <p>Command Zone</p>
+          ${(data.commandZone || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
+        </div>
+        <div class="zone battlefield-zone">
+          <p>Battlefield</p>
+          ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
+        </div>
+        <div class="zone graveyard-zone">
+          <p>Graveyard</p>
+          ${(data.graveyard || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
+        </div>
+        <div class="zone exile-zone">
+          <p>Exile</p>
+          ${(data.exile || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
+        </div>
+        <div class="zone hand-zone">
+          <p>Hand</p>
+          ${ isYou 
+              ? (data.hand || []).map((card, index) => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`).join('')
+              : (data.hand || []).map(() => `<img src="card-back.jpg" alt="Card Back" />`).join('')
+          }
+        </div>
       </div>
     `;
-    area.appendChild(panel);
+    area.appendChild(board);
   });
   attachPlayCardListeners();
 }
@@ -117,7 +136,7 @@ function setupUIEvents() {
     document.getElementById('room-code').textContent = `Room Code: ${roomCode}`;
     document.getElementById('room-code').classList.remove('hidden');
 
-    // Apply layout class based on selected player count
+    // Apply layout class to board container based on selected player count
     const count = playerCountSelect.value;
     const boardContainer = document.getElementById('board-container');
     boardContainer.classList.remove('players-2', 'players-3', 'players-4', 'players-5');
@@ -135,7 +154,7 @@ function setupUIEvents() {
     document.getElementById('room-code').textContent = `Room Code: ${code}`;
     document.getElementById('room-code').classList.remove('hidden');
 
-    // Apply layout class based on selected player count (host sets layout)
+    // Apply layout class to board container based on selected player count
     const count = playerCountSelect.value;
     const boardContainer = document.getElementById('board-container');
     boardContainer.classList.remove('players-2', 'players-3', 'players-4', 'players-5');
