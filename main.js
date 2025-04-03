@@ -15,6 +15,7 @@ function getQueryParams() {
   const queryString = window.location.search.substring(1);
   const pairs = queryString.split("&");
   for (const pair of pairs) {
+    if (!pair) continue;
     const [key, value] = pair.split("=");
     params[decodeURIComponent(key)] = decodeURIComponent(value || "");
   }
@@ -137,19 +138,30 @@ async function joinGameRoom(roomCode) {
 }
 
 function setupUIEvents() {
-  // Only run if we're on the letsplay.html page.
-  if (!window.location.pathname.includes("letsplay.html")) return;
-  
-  // Ensure that the board container exists.
-  if (!document.getElementById('board-container')) return;
+  // Only run if we are on the game board page (letsplay.html)
+  if (!window.location.pathname.includes("letsplay.html")) {
+    console.log("Not on letsplay.html; skipping UI event setup.");
+    return;
+  }
+
+  // Check that the game board container exists
+  const gameBoard = document.getElementById('game-board');
+  if (!gameBoard) {
+    console.warn("Game board element not found. Skipping UI event setup.");
+    return;
+  }
 
   // If URL contains a room parameter, we're in game board mode.
   if (queryParams.room) {
     const roomCode = queryParams.room;
     const playerCount = queryParams.players || "4";
     const boardContainer = document.getElementById('board-container');
-    boardContainer.classList.remove('players-2','players-3','players-4','players-5');
-    boardContainer.classList.add(`players-${playerCount}`);
+    if (boardContainer) {
+      boardContainer.classList.remove('players-2','players-3','players-4','players-5');
+      boardContainer.classList.add(`players-${playerCount}`);
+    } else {
+      console.warn("Board container not found.");
+    }
     const roomCodeOverlay = document.getElementById('room-code');
     if (roomCodeOverlay) {
       roomCodeOverlay.textContent = `Room Code: ${roomCode}`;
@@ -158,6 +170,7 @@ function setupUIEvents() {
     joinGameRoom(roomCode);
   }
 
+  // Set up "Draw Card" button
   const drawCardEl = document.getElementById('draw-card');
   if (drawCardEl) {
     drawCardEl.addEventListener('click', async () => {
@@ -170,8 +183,11 @@ function setupUIEvents() {
       newHand.push(card);
       await update(userRef, { hand: newHand });
     });
+  } else {
+    console.warn("'draw-card' element not found.");
   }
 
+  // Set up "Next Phase" button
   const phaseButton = document.getElementById('next-phase');
   if (phaseButton) {
     phaseButton.addEventListener('click', async () => {
@@ -180,6 +196,8 @@ function setupUIEvents() {
       const nextPhase = phases[(currentIndex + 1) % phases.length];
       await set(ref(db, `rooms/${currentRoom}/phase`), nextPhase);
     });
+  } else {
+    console.warn("'next-phase' element not found.");
   }
 }
 
