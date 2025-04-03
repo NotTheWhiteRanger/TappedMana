@@ -1,9 +1,6 @@
-// Multiplayer MTG Commander Online - Firebase Sync, UI, & Battlefield Interaction
-
 import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Use the already‑initialized Firebase app from index.html
 const db = getDatabase();
 const auth = getAuth();
 
@@ -11,6 +8,19 @@ let currentRoom = null;
 let currentUserId = null;
 let currentUserName = "Player" + Math.floor(Math.random() * 1000);
 let gamePhase = "Beginning";
+
+// Parse URL parameters
+function getQueryParams() {
+  const params = {};
+  const queryString = window.location.search.substring(1);
+  const pairs = queryString.split("&");
+  for (const pair of pairs) {
+    const [key, value] = pair.split("=");
+    params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+  }
+  return params;
+}
+const queryParams = getQueryParams();
 
 function generateRoomCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -29,9 +39,10 @@ async function drawCards(count = 1) {
   return cards;
 }
 
-// Render each player's full board (their "fields")
+// Render each player's full board (their fields)
 function renderAllPlayers(players) {
   const area = document.getElementById('players-area');
+  if (!area) return;
   area.innerHTML = '';
   Object.entries(players).forEach(([uid, data]) => {
     const isYou = uid === currentUserId;
@@ -81,10 +92,8 @@ function attachPlayCardListeners() {
       const userRef = ref(db, `rooms/${currentRoom}/players/${currentUserId}`);
       const snap = await get(userRef);
       const data = snap.val();
-
       const hand = data.hand || [];
       const battlefield = data.battlefield || [];
-
       if (hand[index]) {
         battlefield.push(hand[index]);
         hand.splice(index, 1);
@@ -129,42 +138,18 @@ async function joinGameRoom(roomCode) {
 }
 
 function setupUIEvents() {
-  const playerCountSelect = document.getElementById('player-count');
-
-  document.getElementById('create-game').addEventListener('click', async () => {
-    const roomCode = generateRoomCode();
-    document.getElementById('room-code').textContent = `Room Code: ${roomCode}`;
-    document.getElementById('room-code').classList.remove('hidden');
-
-    // Apply layout class to board container based on selected player count
-    const count = playerCountSelect.value;
+  // If URL contains room code, then we're in game board mode
+  if (queryParams.room) {
+    const roomCode = queryParams.room;
+    const playerCount = queryParams.players || "4";
     const boardContainer = document.getElementById('board-container');
-    boardContainer.classList.remove('players-2', 'players-3', 'players-4', 'players-5');
-    boardContainer.classList.add(`players-${count}`);
-
-    document.getElementById('game-lobby').classList.add('hidden');
-    document.getElementById('game-board').classList.remove('hidden');
-
-    await joinGameRoom(roomCode);
-  });
-
-  document.getElementById('join-game').addEventListener('click', async () => {
-    const code = document.getElementById('game-code').value.trim().toUpperCase();
-    if (!code) return alert('Enter a valid game code.');
-    document.getElementById('room-code').textContent = `Room Code: ${code}`;
-    document.getElementById('room-code').classList.remove('hidden');
-
-    // Apply layout class to board container based on selected player count
-    const count = playerCountSelect.value;
-    const boardContainer = document.getElementById('board-container');
-    boardContainer.classList.remove('players-2', 'players-3', 'players-4', 'players-5');
-    boardContainer.classList.add(`players-${count}`);
-
-    document.getElementById('game-lobby').classList.add('hidden');
-    document.getElementById('game-board').classList.remove('hidden');
-
-    await joinGameRoom(code);
-  });
+    boardContainer.classList.remove('players-2','players-3','players-4','players-5');
+    boardContainer.classList.add(`players-${playerCount}`);
+    const roomCodeOverlay = document.getElementById('room-code');
+    roomCodeOverlay.textContent = `Room Code: ${roomCode}`;
+    roomCodeOverlay.classList.remove('hidden');
+    joinGameRoom(roomCode);
+  }
 
   document.getElementById('draw-card').addEventListener('click', async () => {
     if (!currentRoom || !currentUserId) return;
