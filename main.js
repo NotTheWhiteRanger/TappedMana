@@ -138,13 +138,13 @@ async function joinGameRoom(roomCode) {
 }
 
 function setupUIEvents() {
-  // Only run if we are on the game board page (letsplay.html)
+  // Only run if we're on the letsplay.html page.
   if (!window.location.pathname.includes("letsplay.html")) {
     console.log("Not on letsplay.html; skipping UI event setup.");
     return;
   }
 
-  // Check that the game board container exists
+  // Ensure that the game board exists.
   const gameBoard = document.getElementById('game-board');
   if (!gameBoard) {
     console.warn("Game board element not found. Skipping UI event setup.");
@@ -168,23 +168,6 @@ function setupUIEvents() {
       roomCodeOverlay.classList.remove('hidden');
     }
     joinGameRoom(roomCode);
-  }
-
-  // Set up "Draw Card" button
-  const drawCardEl = document.getElementById('draw-card');
-  if (drawCardEl) {
-    drawCardEl.addEventListener('click', async () => {
-      if (!currentRoom || !currentUserId) return;
-      const card = (await drawCards(1))[0];
-      const userRef = ref(db, `rooms/${currentRoom}/players/${currentUserId}`);
-      const snap = await get(userRef);
-      const data = snap.val();
-      const newHand = data.hand || [];
-      newHand.push(card);
-      await update(userRef, { hand: newHand });
-    });
-  } else {
-    console.warn("'draw-card' element not found.");
   }
 
   // Set up "Next Phase" button
