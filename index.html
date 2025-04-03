@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MTG Commander Online - Let's Play</title>
+  <title>MTG Commander Online - Lobby</title>
   <link rel="stylesheet" href="styles.css">
-
-  <!-- Firebase Initialization -->
+  <!-- Firebase SDKs for Login -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
       authDomain: "new-chat-8d4f4.firebaseapp.com",
@@ -17,55 +18,92 @@
       messagingSenderId: "825077448854",
       appId: "1:825077448854:web:3906174c00e1f6604782b7"
     };
-    initializeApp(firebaseConfig);
-  </script>
 
-  <!-- Game Logic -->
-  <script type="module" src="main.js"></script>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginPage = document.getElementById('login-page');
+      const lobby = document.getElementById('game-lobby');
+      const loginForm = document.getElementById('login-form');
+
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = loginForm.email.value;
+        const password = loginForm.password.value;
+
+        signInWithEmailAndPassword(auth, email, password)
+          .then(() => {
+            loginPage.classList.add('hidden');
+            lobby.classList.remove('hidden');
+          })
+          .catch((error) => {
+            alert("Login failed: " + error.message);
+          });
+      });
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loginPage.classList.add('hidden');
+          lobby.classList.remove('hidden');
+        } else {
+          loginPage.classList.remove('hidden');
+          lobby.classList.add('hidden');
+        }
+      });
+    });
+  </script>
 </head>
 <body>
-  <!-- Room Code Display -->
-  <div id="room-code" class="overlay"></div>
-
-  <!-- Host's Board Container -->
-  <div id="board-container">
-    <!-- Commander Hex Zone -->
-    <div id="hex-zone" class="zone">
-      <p>Commander</p>
-    </div>
-    <!-- Battlefield Zone -->
-    <div id="battlefield-zone" class="zone">
-      <div class="horizontal-divider"></div>
-    </div>
-    <!-- Left Side Zone (Graveyard) -->
-    <div id="left-rect-top" class="zone side-zone">
-      <p>Graveyard</p>
-    </div>
-    <!-- Right Side Zones -->
-    <div id="right-rect-top" class="zone side-zone">
-      <p>Exile</p>
-    </div>
-    <div id="right-rect-bottom" class="zone side-zone">
-      <p>Library</p>
-    </div>
+  <!-- Login Page -->
+  <div id="login-page">
+    <h1>Login to MTG Commander Online</h1>
+    <form id="login-form">
+      <input type="email" name="email" placeholder="Email" required><br><br>
+      <input type="password" name="password" placeholder="Password" required><br><br>
+      <button type="submit">Login</button>
+    </form>
   </div>
 
-  <!-- Game Info Panel -->
-  <div id="game-info">
-    <p id="phase-display">Phase: Beginning</p>
-    <button id="next-phase">Next Phase</button>
+  <!-- Lobby -->
+  <div id="game-lobby" class="hidden">
+    <h1>Welcome to MTG Commander Online</h1>
+    <label for="player-count">Number of Players:</label>
+    <select id="player-count">
+      <option value="2">2 Players</option>
+      <option value="3">3 Players</option>
+      <option value="4" selected>4 Players</option>
+      <option value="5">5 Players</option>
+    </select>
+    <br><br>
+    <button id="create-game">New Game</button>
+    <br><br>
+    <input type="text" id="game-code" placeholder="Enter Game Code">
+    <button id="join-game">Join Game</button>
   </div>
 
-  <!-- Players' Fields Panel -->
-  <div id="players-area">
-    <!-- Each player's full board (fields) will be rendered here -->
-  </div>
-
-  <!-- Player Hand -->
-  <div id="player-hand">
-    <h2>Your Hand</h2>
-    <div id="hand-cards"></div>
-    <!-- Draw Card button removed -->
-  </div>
+  <!-- Lobby Navigation Logic -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      const playerCountSelect = document.getElementById('player-count');
+      document.getElementById('create-game').addEventListener('click', () => {
+        // Generate a room code for new game
+        const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const playerCount = playerCountSelect.value;
+        // Redirect to game page with parameters
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&mode=create`;
+      });
+      document.getElementById('join-game').addEventListener('click', () => {
+        const roomCode = document.getElementById('game-code').value.trim().toUpperCase();
+        if (!roomCode) {
+          alert("Please enter a valid game code.");
+          return;
+        }
+        const playerCount = playerCountSelect.value;
+        // Redirect to game page with parameters
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&mode=join`;
+      });
+    });
+  </script>
 </body>
 </html>
