@@ -5,7 +5,7 @@ const db = getDatabase();
 // In-memory cache for card data
 const cardCache = new Map();
 
-/**
+/** 
  * Fetch a card by its exact name from Scryfall. Uses caching.
  */
 export async function fetchCardByName(cardName) {
