@@ -137,18 +137,19 @@ async function joinGameRoom(roomCode) {
 }
 
 function setupUIEvents() {
-  // Guard: only run if the game board exists
-  if (!document.getElementById('game-board')) return;
+  // Only run if we're on the letsplay.html page.
+  if (!window.location.pathname.includes("letsplay.html")) return;
+  
+  // Ensure that the board container exists.
+  if (!document.getElementById('board-container')) return;
 
   // If URL contains a room parameter, we're in game board mode.
   if (queryParams.room) {
     const roomCode = queryParams.room;
     const playerCount = queryParams.players || "4";
     const boardContainer = document.getElementById('board-container');
-    if (boardContainer) {
-      boardContainer.classList.remove('players-2','players-3','players-4','players-5');
-      boardContainer.classList.add(`players-${playerCount}`);
-    }
+    boardContainer.classList.remove('players-2','players-3','players-4','players-5');
+    boardContainer.classList.add(`players-${playerCount}`);
     const roomCodeOverlay = document.getElementById('room-code');
     if (roomCodeOverlay) {
       roomCodeOverlay.textContent = `Room Code: ${roomCode}`;
