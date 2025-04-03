@@ -9,7 +9,7 @@ let currentUserId = null;
 let currentUserName = "Player" + Math.floor(Math.random() * 1000);
 let gamePhase = "Beginning";
 
-// Parse URL parameters
+// Parse URL parameters (for letsplay.html)
 function getQueryParams() {
   const params = {};
   const queryString = window.location.search.substring(1);
@@ -39,7 +39,6 @@ async function drawCards(count = 1) {
   return cards;
 }
 
-// Render each player's full board (their fields)
 function renderAllPlayers(players) {
   const area = document.getElementById('players-area');
   if (!area) return;
@@ -138,7 +137,12 @@ async function joinGameRoom(roomCode) {
 }
 
 function setupUIEvents() {
-  // If URL contains room code, then we're in game board mode
+  // Only run if the game board elements exist (i.e., on letsplay.html)
+  if (!document.getElementById('draw-card')) {
+    return;
+  }
+
+  // If URL contains a room parameter, we're in game board mode.
   if (queryParams.room) {
     const roomCode = queryParams.room;
     const playerCount = queryParams.players || "4";
