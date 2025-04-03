@@ -1,5 +1,6 @@
 import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { resolveCardEffects, nextPlayerTurn, drawCards } from "./gameEngine.js";
 
 const db = getDatabase();
 const auth = getAuth();
@@ -9,7 +10,7 @@ let currentUserId = null;
 let currentUserName = "Player" + Math.floor(Math.random() * 1000);
 let gamePhase = "Beginning";
 
-// Parse URL parameters (for letsplay.html)
+// Parse URL params
 function getQueryParams() {
   const params = {};
   const queryString = window.location.search.substring(1);
@@ -23,59 +24,46 @@ function getQueryParams() {
 }
 const queryParams = getQueryParams();
 
-function generateRoomCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
 function getCardImage(card) {
   return card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || "";
 }
 
-async function drawCards(count = 1) {
-  const cards = [];
-  for (let i = 0; i < count; i++) {
-    const res = await fetch('https://api.scryfall.com/cards/random?q=game:paper');
-    cards.push(await res.json());
-  }
-  return cards;
-}
-
-function renderAllPlayers(players) {
-  const area = document.getElementById('players-area');
+function renderAllPlayers(players, currentTurnPlayer) {
+  const area = document.getElementById("players-area");
   if (!area) return;
-  area.innerHTML = '';
+  area.innerHTML = "";
   Object.entries(players).forEach(([uid, data]) => {
     const isYou = uid === currentUserId;
-    const board = document.createElement('div');
-    board.classList.add('player-board');
+    const isTurn = uid === currentTurnPlayer;
+    const board = document.createElement("div");
+    board.classList.add("player-board");
     board.innerHTML = `
       <div class="player-header">
-        <h3>${data.name}${isYou ? ' (You)' : ''}</h3>
+        <h3>${data.name}${isYou ? " (You)" : ""}${isTurn ? " 🔁" : ""}</h3>
         <p>Life: ${data.life || 40}</p>
       </div>
       <div class="player-fields">
         <div class="zone command-zone">
           <p>Command Zone</p>
-          ${(data.commandZone || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
+          ${(data.commandZone || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
         </div>
         <div class="zone battlefield-zone">
           <p>Battlefield</p>
-          ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
+          ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
         </div>
         <div class="zone graveyard-zone">
           <p>Graveyard</p>
-          ${(data.graveyard || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
+          ${(data.graveyard || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
         </div>
         <div class="zone exile-zone">
           <p>Exile</p>
-          ${(data.exile || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
+          ${(data.exile || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
         </div>
         <div class="zone hand-zone">
           <p>Hand</p>
-          ${ isYou 
-              ? (data.hand || []).map((card, index) => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`).join('')
-              : (data.hand || []).map(() => `<img src="card-back.jpg" alt="Card Back" />`).join('')
-          }
+          ${isYou
+            ? (data.hand || []).map((card, index) => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`).join("")
+            : (data.hand || []).map(() => `<img src="card-back.jpg" alt="Card Back" />`).join("")}
         </div>
       </div>
     `;
@@ -85,18 +73,21 @@ function renderAllPlayers(players) {
 }
 
 function attachPlayCardListeners() {
-  const handCards = document.querySelectorAll('.hand-card');
+  const handCards = document.querySelectorAll(".hand-card");
   handCards.forEach(cardImg => {
-    cardImg.addEventListener('click', async () => {
-      const index = parseInt(cardImg.getAttribute('data-index'));
+    cardImg.addEventListener("click", async () => {
+      const index = parseInt(cardImg.getAttribute("data-index"));
       const userRef = ref(db, `rooms/${currentRoom}/players/${currentUserId}`);
       const snap = await get(userRef);
       const data = snap.val();
       const hand = data.hand || [];
       const battlefield = data.battlefield || [];
+
       if (hand[index]) {
-        battlefield.push(hand[index]);
+        const card = hand[index];
+        battlefield.push(card);
         hand.splice(index, 1);
+        await resolveCardEffects(currentRoom, currentUserId, card.effects || []);
         await update(userRef, { hand, battlefield });
       }
     });
@@ -105,13 +96,22 @@ function attachPlayCardListeners() {
 
 function setupRealtimeUpdates(roomCode) {
   const roomRef = ref(db, `rooms/${roomCode}/players`);
+  const turnRef = ref(db, `rooms/${roomCode}/turn`);
+  const phaseRef = ref(db, `rooms/${roomCode}/phase`);
+
+  let currentTurnPlayer = null;
+
+  onValue(turnRef, snapshot => {
+    currentTurnPlayer = snapshot.val();
+  });
+
   onValue(roomRef, snapshot => {
     const players = snapshot.val() || {};
-    renderAllPlayers(players);
+    renderAllPlayers(players, currentTurnPlayer);
   });
-  const phaseRef = ref(db, `rooms/${roomCode}/phase`);
+
   onValue(phaseRef, snapshot => {
-    const phaseDisplay = document.getElementById('phase-display');
+    const phaseDisplay = document.getElementById("phase-display");
     gamePhase = snapshot.val() || "Beginning";
     if (phaseDisplay) phaseDisplay.textContent = `Phase: ${gamePhase}`;
   });
@@ -122,8 +122,10 @@ async function joinGameRoom(roomCode) {
   const user = auth.currentUser;
   if (!user) return;
   currentUserId = user.uid;
+
   const playerRef = ref(db, `rooms/${roomCode}/players/${currentUserId}`);
   const openingHand = await drawCards(7);
+
   await set(playerRef, {
     name: currentUserName,
     hand: openingHand,
@@ -133,61 +135,62 @@ async function joinGameRoom(roomCode) {
     commandZone: [],
     life: 40
   });
+
+  const turnRef = ref(db, `rooms/${roomCode}/turn`);
+  const turnSnap = await get(turnRef);
+  if (!turnSnap.exists()) {
+    await set(turnRef, currentUserId);
+    await update(playerRef, { hand: [...openingHand, ...(await drawCards(1))] });
+  }
+
   await set(ref(db, `rooms/${roomCode}/phase`), "Beginning");
   setupRealtimeUpdates(roomCode);
 }
 
 function setupUIEvents() {
-  // Only run on letsplay.html (game board page)
-  if (!window.location.pathname.includes("letsplay.html")) {
-    console.log("Not on game board page; skipping UI event setup.");
-    return;
-  }
+  if (!window.location.pathname.includes("letsplay.html")) return;
 
-  // Ensure game board exists
-  const gameBoard = document.getElementById('game-board');
-  if (!gameBoard) {
-    console.warn("Game board element not found. Skipping UI event setup.");
-    return;
-  }
+  const gameBoard = document.getElementById("game-board");
+  if (!gameBoard) return;
 
   if (queryParams.room) {
     const roomCode = queryParams.room;
     const playerCount = queryParams.players || "4";
-    const boardContainer = document.getElementById('board-container');
+    const boardContainer = document.getElementById("board-container");
     if (boardContainer) {
-      boardContainer.classList.remove('players-2','players-3','players-4','players-5');
+      boardContainer.classList.remove("players-2", "players-3", "players-4", "players-5");
       boardContainer.classList.add(`players-${playerCount}`);
     }
-    const roomCodeOverlay = document.getElementById('room-code');
+
+    const roomCodeOverlay = document.getElementById("room-code");
     if (roomCodeOverlay) {
       roomCodeOverlay.textContent = `Room Code: ${roomCode}`;
-      roomCodeOverlay.classList.remove('hidden');
+      roomCodeOverlay.classList.remove("hidden");
     }
+
     joinGameRoom(roomCode);
   } else {
-    // If no room is specified, show a message or redirect.
-    const noRoomEl = document.getElementById('no-room');
-    if (noRoomEl) {
-      noRoomEl.style.display = "block";
-    }
+    const noRoomEl = document.getElementById("no-room");
+    if (noRoomEl) noRoomEl.style.display = "block";
   }
 
-  // Set up "Next Phase" button.
-  const phaseButton = document.getElementById('next-phase');
+  const phaseButton = document.getElementById("next-phase");
   if (phaseButton) {
-    phaseButton.addEventListener('click', async () => {
+    phaseButton.addEventListener("click", async () => {
       const phases = ["Beginning", "Main", "Combat", "Second Main", "End"];
       const currentIndex = phases.indexOf(gamePhase);
       const nextPhase = phases[(currentIndex + 1) % phases.length];
       await set(ref(db, `rooms/${currentRoom}/phase`), nextPhase);
+
+      if (nextPhase === "End") {
+        await nextPlayerTurn(currentRoom);
+        await set(ref(db, `rooms/${currentRoom}/phase`), "Beginning");
+      }
     });
-  } else {
-    console.warn("'next-phase' element not found.");
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   onAuthStateChanged(auth, user => {
     if (user) {
       setupUIEvents();
