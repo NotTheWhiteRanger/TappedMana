@@ -6,7 +6,7 @@ export const commanderDecks = [
     commander: "Kaalia of the Vast",
     description: "A fast-paced, aggressive deck with an arsenal of creatures.",
     deckList: [
-      "Kaalia of the Vast",            // Commander
+      "Kaalia of the Vast",            
       "Gisela, Blade of Goldnight",
       "Anger",
       "Balefire Dragon",
@@ -44,6 +44,6 @@ export const commanderDecks = [
       "Fervent Champion",
       "Mardu Woe-Reaper"
     ]
-  },
-  // Other decks (deck2, deck3, deck4) would follow here…
+  }
+  // You can add additional decks (deck2, deck3, deck4) here.
 ];
