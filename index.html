@@ -78,6 +78,15 @@
   <!-- Game Lobby -->
   <div id="game-lobby" class="hidden">
     <h1>Welcome to MTG Commander Online</h1>
+    <!-- Player Count Selection -->
+    <label for="player-count">Number of Players:</label>
+    <select id="player-count">
+      <option value="2">2 Players</option>
+      <option value="3">3 Players</option>
+      <option value="4" selected>4 Players</option>
+      <option value="5">5 Players</option>
+    </select>
+    <br><br>
     <button id="create-game">Create Game</button>
     <input type="text" id="game-code" placeholder="Enter Game Code">
     <button id="join-game">Join Game</button>
