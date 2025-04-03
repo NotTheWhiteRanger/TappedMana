@@ -94,7 +94,7 @@
 
   <!-- Main Game Board -->
   <div id="game-board" class="hidden">
-    <!-- Board Container mimicking a TCG board layout -->
+    <!-- Board Container (for the host's main field) -->
     <div id="board-container">
       <!-- Commander hex zone -->
       <div id="hex-zone" class="zone">
@@ -104,7 +104,7 @@
       <div id="battlefield-zone" class="zone">
         <div class="horizontal-divider"></div>
       </div>
-      <!-- Left side zone (e.g., Graveyard) -->
+      <!-- Left side zone (Graveyard) -->
       <div id="left-rect-top" class="zone side-zone">
         <p>Graveyard</p>
       </div>
@@ -123,8 +123,10 @@
       <button id="next-phase">Next Phase</button>
     </div>
 
-    <!-- Player Info Panel (dynamic) -->
-    <div id="players-area"></div>
+    <!-- Players' Fields -->
+    <div id="players-area">
+      <!-- Each player's board will be rendered here -->
+    </div>
 
     <!-- Player Hand -->
     <div id="player-hand">
