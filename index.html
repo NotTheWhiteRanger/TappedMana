@@ -76,6 +76,14 @@
       <option value="5">5 Players</option>
     </select>
     <br><br>
+    <label for="deck-selection">Select Commander Deck:</label>
+    <select id="deck-selection">
+      <option value="deck1">Aggressive Assault</option>
+      <option value="deck2">Control & Conquer</option>
+      <option value="deck3">Ramp and Dominate</option>
+      <option value="deck4">Token Army</option>
+    </select>
+    <br><br>
     <button id="create-game">New Game</button>
     <br><br>
     <input type="text" id="game-code" placeholder="Enter Game Code">
@@ -90,8 +98,9 @@
         // Generate a room code for new game
         const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
         const playerCount = playerCountSelect.value;
-        // Redirect to game page with parameters
-        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&mode=create`;
+        const deckSelection = document.getElementById('deck-selection').value;
+        // Redirect to game page with parameters including the deck choice
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&deck=${deckSelection}&mode=create`;
       });
       document.getElementById('join-game').addEventListener('click', () => {
         const roomCode = document.getElementById('game-code').value.trim().toUpperCase();
@@ -100,8 +109,9 @@
           return;
         }
         const playerCount = playerCountSelect.value;
-        // Redirect to game page with parameters
-        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&mode=join`;
+        const deckSelection = document.getElementById('deck-selection').value;
+        // Redirect to game page with parameters including the deck choice
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&deck=${deckSelection}&mode=join`;
       });
     });
   </script>
