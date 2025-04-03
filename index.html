@@ -10,7 +10,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Firebase configuration (same as your main website)
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
       authDomain: "new-chat-8d4f4.firebaseapp.com",
@@ -28,7 +28,6 @@
       const loginPage = document.getElementById('login-page');
       const lobby = document.getElementById('game-lobby');
       const gameBoard = document.getElementById('game-board');
-
       const loginForm = document.getElementById('login-form');
 
       loginForm.addEventListener('submit', (e) => {
@@ -64,9 +63,7 @@
 </head>
 <body>
   <!-- Room Code Display -->
-  <div id="room-code" class="overlay hidden">
-    <!-- Will be filled by JS -->
-  </div>
+  <div id="room-code" class="overlay hidden"></div>
 
   <!-- Login Page -->
   <div id="login-page">
@@ -88,34 +85,22 @@
 
   <!-- Main Game Board -->
   <div id="game-board" class="hidden">
-    <!-- Game Info Panel (for phase display and next phase control) -->
+    <!-- Game Info Panel -->
     <div id="game-info">
       <p id="phase-display">Phase: Beginning</p>
       <button id="next-phase">Next Phase</button>
     </div>
 
     <!-- Player Info Panel -->
-    <div id="players-area">
-      <!-- Player info will be dynamically added -->
-    </div>
+    <div id="players-area"></div>
 
     <!-- Game Zones -->
     <div id="game-zones">
-      <div id="stack-zone">
-        <h3>Stack</h3>
-      </div>
-      <div id="battlefield-zone">
-        <h3>Battlefield</h3>
-      </div>
-      <div id="command-zone">
-        <h3>Command Zone</h3>
-      </div>
-      <div id="graveyard-zone">
-        <h3>Graveyards</h3>
-      </div>
-      <div id="exile-zone">
-        <h3>Exile</h3>
-      </div>
+      <div id="stack-zone"><h3>Stack</h3></div>
+      <div id="battlefield-zone"><h3>Battlefield</h3></div>
+      <div id="command-zone"><h3>Command Zone</h3></div>
+      <div id="graveyard-zone"><h3>Graveyards</h3></div>
+      <div id="exile-zone"><h3>Exile</h3></div>
     </div>
 
     <!-- Player Hand -->
