@@ -1,1 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MTG Commander Online - Let's Play</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Include Firebase SDKs via main.js (which now handles game board logic) -->
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <!-- Room Code Display -->
+  <div id="room-code" class="overlay"></div>
+
+  <!-- Host's Board Container -->
+  <div id="board-container">
+    <!-- Commander Hex Zone -->
+    <div id="hex-zone" class="zone">
+      <p>Commander</p>
+    </div>
+    <!-- Battlefield Zone -->
+    <div id="battlefield-zone" class="zone">
+      <div class="horizontal-divider"></div>
+    </div>
+    <!-- Left Side Zone (Graveyard) -->
+    <div id="left-rect-top" class="zone side-zone">
+      <p>Graveyard</p>
+    </div>
+    <!-- Right Side Zones -->
+    <div id="right-rect-top" class="zone side-zone">
+      <p>Exile</p>
+    </div>
+    <div id="right-rect-bottom" class="zone side-zone">
+      <p>Library</p>
+    </div>
+  </div>
+
+  <!-- Game Info Panel -->
+  <div id="game-info">
+    <p id="phase-display">Phase: Beginning</p>
+    <button id="next-phase">Next Phase</button>
+  </div>
+
+  <!-- Players' Fields Panel -->
+  <div id="players-area">
+    <!-- Each player's full board (fields) will be rendered here -->
+  </div>
+
+  <!-- Player Hand -->
+  <div id="player-hand">
+    <h2>Your Hand</h2>
+    <div id="hand-cards"></div>
+    <button id="draw-card">Draw Card</button>
+  </div>
+</body>
+</html>
 
