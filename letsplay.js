@@ -2,6 +2,7 @@
 import { getDatabase, ref, set, update, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { commanderDecks } from "./decks.js";
+import { fetchCardByName, getCardImage, nextPlayerTurn } from "./gameEngine.js";
 
 const db = getDatabase();
 const auth = getAuth();
@@ -11,7 +12,7 @@ let currentUserId = null;
 let currentUserName = "Player" + Math.floor(Math.random() * 1000);
 let gamePhase = "Beginning";
 
-// Utility: parse URL parameters
+// Utility: Parse URL parameters into an object.
 function getQueryParams() {
   const params = {};
   const queryString = window.location.search.substring(1);
@@ -25,35 +26,33 @@ function getQueryParams() {
 }
 const queryParams = getQueryParams();
 
-// Get deck selection from URL or UI
+// Get the selected deck ID from URL parameters or from the deck-selection element.
 function getSelectedDeck() {
   return queryParams.deck ||
          (document.getElementById('deck-selection') && document.getElementById('deck-selection').value) ||
          'deck1';
 }
 
-// Helper: Fisher–Yates shuffle
+// Helper: Fisher–Yates shuffle algorithm.
 function shuffle(array) {
   let currentIndex = array.length, randomIndex;
   while (currentIndex !== 0) {
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
-    // Swap the elements
     [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
   }
   return array;
 }
 
 /**
- * Draws `count` cards from the player's library (deck) stored in Firebase.
- * The drawn cards are removed from the library so they are not drawn again.
+ * Helper: Draw cards from the player's library.
+ * The library is stored as an array of card objects; drawn cards are removed.
  */
 async function drawFromLibrary(roomCode, playerId, count = 1) {
   const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
   const snap = await get(playerRef);
   const player = snap.val();
   let library = player.library || [];
-  // If there aren’t enough cards left, draw as many as possible.
   if (library.length < count) count = library.length;
   const drawn = library.splice(0, count);
   await update(playerRef, { library });
@@ -61,7 +60,8 @@ async function drawFromLibrary(roomCode, playerId, count = 1) {
 }
 
 /**
- * When a player joins a game, load their chosen deck, shuffle it, and draw an opening hand.
+ * When a player joins a game, load their selected deck, convert each card name into a full card object
+ * by fetching details from Scryfall, shuffle the deck, draw an opening hand, and store the remaining library.
  */
 async function joinGameRoom(roomCode) {
   currentRoom = roomCode;
@@ -69,7 +69,6 @@ async function joinGameRoom(roomCode) {
   if (!user) return;
   currentUserId = user.uid;
   
-  // Get selected deck ID and find the deck object
   const selectedDeckId = getSelectedDeck();
   const selectedDeckObj = commanderDecks.find(deck => deck.id === selectedDeckId);
   if (!selectedDeckObj) {
@@ -77,18 +76,24 @@ async function joinGameRoom(roomCode) {
     return;
   }
   
-  // Copy and shuffle the deck list to serve as the player's library.
+  // Clone the deck list (an array of card names) and shuffle it.
   let library = [...selectedDeckObj.deckList];
   library = shuffle(library);
+  console.log("Shuffled library (names):", library);
   
-  // Draw the top 7 cards as an opening hand.
+  // Convert each card name into a full card object from Scryfall.
+  library = await Promise.all(library.map(cardName => fetchCardByName(cardName)));
+  console.log("Shuffled library (card objects):", library);
+  
+  // Draw the top 7 cards as the opening hand.
   const openingHand = library.splice(0, 7);
+  console.log("Opening hand:", openingHand);
   
   const playerRef = ref(db, `rooms/${roomCode}/players/${currentUserId}`);
   await set(playerRef, {
     name: currentUserName,
     hand: openingHand,
-    library,          // Store the remaining deck as the library.
+    library,          // Remaining deck as card objects.
     battlefield: [],
     graveyard: [],
     exile: [],
@@ -98,12 +103,11 @@ async function joinGameRoom(roomCode) {
     counters: {}
   });
   
-  // Set initial turn information if needed.
+  // Set initial turn if not already set.
   const turnRef = ref(db, `rooms/${roomCode}/turn`);
   const turnSnap = await get(turnRef);
   if (!turnSnap.exists()) {
     await set(turnRef, currentUserId);
-    // Draw an extra card at turn start (if desired)
     const extraCards = await drawFromLibrary(roomCode, currentUserId, 1);
     await update(playerRef, { hand: [...openingHand, ...extraCards] });
   }
@@ -112,14 +116,7 @@ async function joinGameRoom(roomCode) {
   setupRealtimeUpdates(roomCode);
 }
 
-// Utility: get a card image URL (if you later integrate with an API)
-function getCardImage(cardName) {
-  // For now, simply return a placeholder or a URL constructed from the card name.
-  // You could integrate with Scryfall image search here.
-  return `https://via.placeholder.com/80x120.png?text=${encodeURIComponent(cardName)}`;
-}
-
-// Render players’ boards including hand and battlefield.
+// Render players' boards (hand and other zones).
 function renderAllPlayers(players, currentTurnPlayer) {
   const area = document.getElementById("players-area");
   if (!area) return;
@@ -141,11 +138,11 @@ function renderAllPlayers(players, currentTurnPlayer) {
           <p>Hand</p>
           ${isYou
             ? (data.hand || []).map((card, index) =>
-                `<img src="${getCardImage(card)}" alt="${card}" title="${card}" data-index="${index}" class="hand-card" />`
+                `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`
               ).join("")
             : (data.hand || []).map(() => `<img src="card-back.jpg" alt="Card Back" />`).join("")}
         </div>
-        <!-- Other zones like battlefield, graveyard, etc. can be added here -->
+        <!-- Additional zones (battlefield, graveyard, etc.) can be added here -->
       </div>
     `;
     area.appendChild(board);
@@ -153,7 +150,7 @@ function renderAllPlayers(players, currentTurnPlayer) {
   attachPlayCardListeners();
 }
 
-// When a hand card is clicked, move it to the battlefield and (if needed) trigger effects.
+// Attach click events to hand cards so they can be played (moved to battlefield).
 function attachPlayCardListeners() {
   const handCards = document.querySelectorAll(".hand-card");
   handCards.forEach(cardImg => {
@@ -169,15 +166,13 @@ function attachPlayCardListeners() {
         const card = hand[index];
         battlefield.push(card);
         hand.splice(index, 1);
-        // (Optional) Add a +1/+1 counter effect when the card is played.
-        // You could implement additional effects here.
         await update(userRef, { hand, battlefield });
       }
     });
   });
 }
 
-// Set up realtime Firebase listeners for players, turn, and phase.
+// Set up realtime Firebase listeners for players, turn, and phase updates.
 function setupRealtimeUpdates(roomCode) {
   const roomRef = ref(db, `rooms/${roomCode}/players`);
   const turnRef = ref(db, `rooms/${roomCode}/turn`);
@@ -201,7 +196,7 @@ function setupRealtimeUpdates(roomCode) {
   });
 }
 
-// UI: If a room code exists in the URL, join the game.
+// Set up UI events: join game if room code exists in URL.
 function setupUIEvents() {
   if (!window.location.pathname.includes("letsplay.html")) return;
   const boardContainer = document.getElementById("board-container");
@@ -232,41 +227,12 @@ function setupUIEvents() {
       const nextPhase = phases[(currentIndex + 1) % phases.length];
       await set(ref(db, `rooms/${currentRoom}/phase`), nextPhase);
 
-      // When moving to "End", advance the turn and draw a card from the library.
       if (nextPhase === "End") {
         await nextPlayerTurn(currentRoom);
         await set(ref(db, `rooms/${currentRoom}/phase`), "Beginning");
       }
     });
   }
-}
-
-// Modified turn draw: draw one card from the player's library.
-async function nextPlayerTurn(roomCode) {
-  const playersRef = ref(db, `rooms/${roomCode}/players`);
-  const playersSnap = await get(playersRef);
-  const players = playersSnap.val() || {};
-  const playerIds = Object.keys(players);
-
-  const turnRef = ref(db, `rooms/${roomCode}/turn`);
-  const turnSnap = await get(turnRef);
-  const currentId = turnSnap.val() || playerIds[0];
-
-  const currentIndex = playerIds.indexOf(currentId);
-  const nextIndex = (currentIndex + 1) % playerIds.length;
-  const nextPlayerId = playerIds[nextIndex];
-
-  await set(turnRef, nextPlayerId);
-  await givePlayerStartTurnDraw(roomCode, nextPlayerId);
-}
-
-async function givePlayerStartTurnDraw(roomCode, playerId) {
-  const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
-  const newCard = await drawFromLibrary(roomCode, playerId, 1);
-  const snap = await get(playerRef);
-  const player = snap.val();
-  const updatedHand = [...(player.hand || []), ...newCard];
-  await update(playerRef, { hand: updatedHand });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
