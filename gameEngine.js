@@ -6,22 +6,32 @@ const db = getDatabase();
 const cardCache = new Map();
 
 /**
- * Fetches card details from Scryfall using the provided query URL.
- * Uses an in-memory cache to avoid redundant network requests.
+ * Fetch a card by its exact name from Scryfall. Uses caching to avoid duplicate requests.
  */
-export async function fetchCardDetails(queryUrl) {
-  if (cardCache.has(queryUrl)) {
-    return cardCache.get(queryUrl);
+export async function fetchCardByName(cardName) {
+  const cacheKey = `name:${cardName}`;
+  if (cardCache.has(cacheKey)) {
+    return cardCache.get(cacheKey);
   }
-  const res = await fetch(queryUrl);
+  const url = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`;
+  const res = await fetch(url);
   const data = await res.json();
-  cardCache.set(queryUrl, data);
+  cardCache.set(cacheKey, data);
   return data;
 }
 
 /**
- * Draws a specified number of cards using the Scryfall random card endpoint.
- * Uses caching to store card data (note: for truly random draws, caching may be less ideal).
+ * Returns the image URL for a given card object.
+ */
+export function getCardImage(card) {
+  return card.image_uris?.small ||
+         (card.card_faces && card.card_faces[0].image_uris?.small) ||
+         `https://via.placeholder.com/80x120.png?text=${encodeURIComponent(card.name)}`;
+}
+
+/**
+ * Draw cards from the Scryfall random endpoint.
+ * (This function is provided for demonstration and is not used in deck-drawing mode.)
  */
 export async function drawCards(count = 1) {
   const cards = [];
@@ -29,7 +39,6 @@ export async function drawCards(count = 1) {
     const url = 'https://api.scryfall.com/cards/random?q=game:paper';
     let cardData;
     if (cardCache.has(url)) {
-      // For demonstration: caching a random card draw (you may want to adjust this behavior)
       cardData = cardCache.get(url);
     } else {
       const res = await fetch(url);
@@ -43,7 +52,7 @@ export async function drawCards(count = 1) {
 
 /**
  * Advances the game to the next player's turn.
- * Updates the Firebase room turn data and gives the new player a card draw.
+ * After updating the turn, the new player draws one card from their library.
  */
 export async function nextPlayerTurn(roomCode) {
   const playersRef = ref(db, `rooms/${roomCode}/players`);
@@ -64,22 +73,35 @@ export async function nextPlayerTurn(roomCode) {
 }
 
 /**
- * Gives a player a card draw at the start of their turn.
+ * Helper: Draw a number of cards from the player's library stored in Firebase.
+ * Drawn cards are removed from the library.
  */
-async function givePlayerStartTurnDraw(roomCode, playerId) {
+async function drawFromLibrary(roomCode, playerId, count = 1) {
   const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
   const snap = await get(playerRef);
   const player = snap.val();
+  let library = player.library || [];
+  if (library.length < count) count = library.length;
+  const drawn = library.splice(0, count);
+  await update(playerRef, { library });
+  return drawn;
+}
 
-  const newCard = await drawCards(1);
+/**
+ * Helper: Gives the player a start-of-turn draw by drawing one card from their library.
+ */
+async function givePlayerStartTurnDraw(roomCode, playerId) {
+  const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
+  const newCard = await drawFromLibrary(roomCode, playerId, 1);
+  const snap = await get(playerRef);
+  const player = snap.val();
   const updatedHand = [...(player.hand || []), ...newCard];
   await update(playerRef, { hand: updatedHand });
 }
 
 /**
- * Resolves an array of card effects for a given player.
- * Supports effects: DRAW, DISCARD, EXILE, and COUNTER.
- * - For COUNTER effects, you can apply counters to a card on the battlefield or directly to the player.
+ * Resolves card effects (e.g., DRAW, DISCARD, EXILE, COUNTER).
+ * For COUNTER effects, adds counters to a card in the battlefield or to the player.
  */
 export async function resolveCardEffects(roomCode, playerId, effects) {
   const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
@@ -102,8 +124,6 @@ export async function resolveCardEffects(roomCode, playerId, effects) {
         break;
       }
       case 'COUNTER': {
-        // For a card: { type: 'COUNTER', target: 'CARD', cardIndex: 0, counterType: '+1/+1', amount: 1 }
-        // For a player: { type: 'COUNTER', target: 'PLAYER', counterType: 'poison', amount: 1 }
         if (effect.target === 'CARD') {
           if (player.battlefield && player.battlefield[effect.cardIndex]) {
             const card = player.battlefield[effect.cardIndex];
