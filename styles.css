@@ -16,65 +16,118 @@
 }
 
 /* Base styling */
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #2a2a2a, #1f1f1f);
   font-family: Arial, sans-serif;
-  background: #1f1f1f;
-  color: #f0f0f0;
+  color: #fff;
 }
 
-#login-page,
-#game-lobby {
+/* Layout for login and lobby pages */
+#login-page, #game-lobby {
   text-align: center;
   margin-top: 50px;
 }
 
-/* Game board layout for different player counts */
-#game-board {
-  padding: 20px;
+/* Board Container */
+#board-container {
+  position: relative;
+  width: 100%;
+  height: 60vh; /* Adjust height as needed */
+  margin: 20px auto;
+  border: 2px solid #fff;
+  box-sizing: border-box;
 }
 
-/* Example layout for 2 players */
-.players-2 {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  grid-template-columns: 1fr;
+/* Layout for different player counts (applied as a class on #board-container) */
+#board-container.players-2 {
+  /* For two players, center the board or apply specific styles */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Example layout for 3 players */
-.players-3 {
-  display: grid;
-  grid-template-areas:
-    "player1 player2"
-    "player3 player3";
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+#board-container.players-3,
+#board-container.players-4,
+#board-container.players-5 {
+  /* For more players, zones will be absolutely positioned */
 }
 
-/* Example layout for 4 players (classic Commander layout) */
-.players-4 {
-  display: grid;
-  grid-template-areas:
-    "player1 game"
-    "player2 game"
-    "player3 game"
-    "player4 game";
-  grid-template-columns: 200px 1fr;
-  grid-template-rows: repeat(4, auto);
+/* Zone Styles */
+.zone {
+  position: absolute;
+  border: 2px solid rgba(255,255,255,0.7);
+  box-shadow: 0 0 10px rgba(255,255,255,0.2);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.3);
 }
 
-/* Example layout for 5 players (circular-ish layout) */
-.players-5 {
-  display: grid;
-  grid-template-areas:
-    "player1 game player2"
-    "player3 game player4"
-    "player5 game game";
-  grid-template-columns: 1fr 2fr 1fr;
-  grid-template-rows: auto auto auto;
+/* Commander Hex Zone */
+#hex-zone {
+  top: 5%;
+  left: 5%;
+  width: 120px;
+  height: 104px;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
 }
 
-/* Player zone styling */
+/* Battlefield Zone: central large area */
+#battlefield-zone {
+  top: 10%;
+  left: 25%;
+  width: 50%;
+  height: 70%;
+}
+
+/* Left Side Zone (Graveyard) */
+#left-rect-top {
+  top: 25%;
+  left: 5%;
+  width: 120px;
+  height: 180px;
+}
+
+/* Right Top Zone (Exile) */
+#right-rect-top {
+  top: 25%;
+  right: 5%;
+  width: 120px;
+  height: 180px;
+}
+
+/* Right Bottom Zone (Library) */
+#right-rect-bottom {
+  top: 55%;
+  right: 5%;
+  width: 120px;
+  height: 180px;
+}
+
+/* Horizontal Divider in Battlefield (optional) */
+.horizontal-divider {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #fff;
+  opacity: 0.5;
+}
+
+/* Game Info Panel */
+#game-info {
+  text-align: center;
+  margin: 10px 0;
+}
+
+/* Player Zone styling for dynamic player info */
 .player-zone {
   border: 2px solid #333;
   padding: 10px;
@@ -89,35 +142,29 @@ body {
   margin-bottom: 10px;
 }
 
-/* Card display areas */
-.battlefield,
-.hand-view {
+/* Card Display Areas */
+.battlefield, .hand-view {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 10px;
 }
 
-.battlefield img,
-.hand-view img {
+.battlefield img, .hand-view img {
   width: 75px;
   border-radius: 4px;
 }
 
-/* Additional layout styling */
+/* Player Hand Styling */
+#player-hand {
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* Optional: Style for any additional zones or grid areas */
 #game-zones {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-top: 20px;
-}
-
-#game-info {
-  text-align: center;
-  margin: 20px 0;
-}
-
-#player-hand {
-  text-align: center;
-  margin: 20px 0;
 }
