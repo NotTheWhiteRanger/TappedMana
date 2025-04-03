@@ -137,8 +137,8 @@ async function joinGameRoom(roomCode) {
 }
 
 function setupUIEvents() {
-  // Only run if the game board elements exist (i.e., on letsplay.html)
-  if (!document.getElementById('draw-card')) {
+  // Use a guard that checks for the overall game board container
+  if (!document.getElementById('game-board')) {
     return;
   }
 
@@ -155,16 +155,19 @@ function setupUIEvents() {
     joinGameRoom(roomCode);
   }
 
-  document.getElementById('draw-card').addEventListener('click', async () => {
-    if (!currentRoom || !currentUserId) return;
-    const card = (await drawCards(1))[0];
-    const userRef = ref(db, `rooms/${currentRoom}/players/${currentUserId}`);
-    const snap = await get(userRef);
-    const data = snap.val();
-    const newHand = data.hand || [];
-    newHand.push(card);
-    await update(userRef, { hand: newHand });
-  });
+  const drawCardEl = document.getElementById('draw-card');
+  if (drawCardEl) {
+    drawCardEl.addEventListener('click', async () => {
+      if (!currentRoom || !currentUserId) return;
+      const card = (await drawCards(1))[0];
+      const userRef = ref(db, `rooms/${currentRoom}/players/${currentUserId}`);
+      const snap = await get(userRef);
+      const data = snap.val();
+      const newHand = data.hand || [];
+      newHand.push(card);
+      await update(userRef, { hand: newHand });
+    });
+  }
 
   const phaseButton = document.getElementById('next-phase');
   if (phaseButton) {
