@@ -8,8 +8,7 @@ export const commanderDecks = [
     deckList: [
       "Gisela, Blade of Goldnight",
       "Anger",
-      "Balefire Dragon",
-      // ...more cards
+      "Balefire Dragon"
     ]
   },
   {
@@ -20,8 +19,7 @@ export const commanderDecks = [
     deckList: [
       "Swords to Plowshares",
       "Counterspell",
-      "Teferi, Hero of Dominaria",
-      // ...more cards
+      "Teferi, Hero of Dominaria"
     ]
   },
   {
@@ -32,8 +30,7 @@ export const commanderDecks = [
     deckList: [
       "Cultivate",
       "Kodama's Reach",
-      "Dragonlord Atarka",
-      // ...more cards
+      "Dragonlord Atarka"
     ]
   },
   {
@@ -44,8 +41,7 @@ export const commanderDecks = [
     deckList: [
       "Lightning Mauler",
       "Gather the Townsfolk",
-      "Throne of the God-Pharaoh",
-      // ...more cards
+      "Throne of the God-Pharaoh"
     ]
-  },
+  }
 ];
