@@ -32,7 +32,7 @@ html, body {
   margin-top: 50px;
 }
 
-/* Board Container */
+/* Board Container for host's main field */
 #board-container {
   position: relative;
   width: 100%;
@@ -44,19 +44,17 @@ html, body {
 
 /* Layout for different player counts (applied as a class on #board-container) */
 #board-container.players-2 {
-  /* For two players, center the board or apply specific styles */
   display: flex;
   justify-content: center;
   align-items: center;
 }
-
 #board-container.players-3,
 #board-container.players-4,
 #board-container.players-5 {
-  /* For more players, zones will be absolutely positioned */
+  /* For more players, you can adjust positions or leave as default absolute positioning */
 }
 
-/* Zone Styles */
+/* Zone Styles for the board container */
 .zone {
   position: absolute;
   border: 2px solid rgba(255,255,255,0.7);
@@ -127,31 +125,38 @@ html, body {
   margin: 10px 0;
 }
 
-/* Player Zone styling for dynamic player info */
-.player-zone {
-  border: 2px solid #333;
-  padding: 10px;
+/* Player Board (each player's field display) */
+.player-board {
+  border: 2px solid #666;
   margin: 10px;
-  border-radius: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #2a2a2a;
+}
+.player-board .player-header {
+  margin-bottom: 5px;
+  text-align: center;
+}
+.player-fields {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+.player-fields .zone {
+  border: 1px solid #aaa;
+  padding: 5px;
+  border-radius: 4px;
   background: #1e1e1e;
-  color: white;
-  width: 100%;
+  text-align: center;
 }
-
-.player-header {
-  margin-bottom: 10px;
+.player-fields .zone p {
+  margin: 0;
+  font-size: 0.8em;
 }
-
-/* Card Display Areas */
-.battlefield, .hand-view {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.battlefield img, .hand-view img {
-  width: 75px;
+.player-fields .zone img {
+  width: 50px;
+  margin: 2px;
   border-radius: 4px;
 }
 
@@ -161,10 +166,4 @@ html, body {
   margin: 20px 0;
 }
 
-/* Optional: Style for any additional zones or grid areas */
-#game-zones {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-top: 20px;
-}
+/* (Optional) Additional styling for any other zones */
