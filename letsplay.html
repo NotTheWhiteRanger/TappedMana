@@ -4,7 +4,24 @@
   <meta charset="UTF-8">
   <title>MTG Commander Online - Let's Play</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Include Firebase SDKs via main.js (which now handles game board logic) -->
+
+  <!-- Firebase Initialization -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
+      authDomain: "new-chat-8d4f4.firebaseapp.com",
+      databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
+      projectId: "new-chat-8d4f4",
+      storageBucket: "new-chat-8d4f4.firebasestorage.app",
+      messagingSenderId: "825077448854",
+      appId: "1:825077448854:web:3906174c00e1f6604782b7"
+    };
+    // Initialize Firebase App before loading main.js
+    initializeApp(firebaseConfig);
+  </script>
+
+  <!-- Game Logic -->
   <script type="module" src="main.js"></script>
 </head>
 <body>
@@ -53,4 +70,3 @@
   </div>
 </body>
 </html>
-
