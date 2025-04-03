@@ -117,7 +117,9 @@ async function joinGameRoom(roomCode) {
 }
 
 /**
- * Renders each player's board, including Hand and Battlefield zones.
+ * Renders each player's board.
+ * For the current user, displays both the Hand and Battlefield zones.
+ * (Battlefield images include an inline border style for debugging.)
  */
 function renderAllPlayers(players, currentTurnPlayer) {
   const area = document.getElementById("players-area");
@@ -147,7 +149,7 @@ function renderAllPlayers(players, currentTurnPlayer) {
         <div class="zone battlefield-zone">
           <p>Battlefield</p>
           ${(data.battlefield || []).map(card =>
-              `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`
+              `<img style="border: 2px solid red;" src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`
             ).join("")}
         </div>
       </div>
@@ -159,7 +161,7 @@ function renderAllPlayers(players, currentTurnPlayer) {
 
 /**
  * Attaches click events to hand cards.
- * When tapped, the card is moved from the hand to the battlefield.
+ * When tapped, the card is moved from Hand to Battlefield.
  */
 function attachPlayCardListeners() {
   const handCards = document.querySelectorAll(".hand-card");
@@ -177,13 +179,14 @@ function attachPlayCardListeners() {
         battlefield.push(card);
         hand.splice(index, 1);
         await update(userRef, { hand, battlefield });
+        console.log("Card moved to battlefield:", card.name);
       }
     });
   });
 }
 
 /**
- * Sets up realtime Firebase listeners for players, turn, and phase.
+ * Sets up realtime Firebase listeners for players, turn, and phase updates.
  */
 function setupRealtimeUpdates(roomCode) {
   const roomRef = ref(db, `rooms/${roomCode}/players`);
