@@ -1,38 +1,11 @@
 // Multiplayer MTG Commander Online - Firebase Sync, UI, & Battlefield Interaction
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import {
-  getDatabase,
-  ref,
-  onValue,
-  set,
-  update,
-  get
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInAnonymously
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
-  authDomain: "new-chat-8d4f4.firebaseapp.com",
-  databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
-  projectId: "new-chat-8d4f4",
-  storageBucket: "new-chat-8d4f4.firebasestorage.app",
-  messagingSenderId: "825077448854",
-  appId: "1:825077448854:web:3906174c00e1f6604782b7"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
-
-// Sign in anonymously if not already signed in
-signInAnonymously(auth).catch(error => {
-  console.error("Anonymous sign-in failed:", error);
-});
+// Use the already‑initialized Firebase app from index.html
+const db = getDatabase();
+const auth = getAuth();
 
 let currentRoom = null;
 let currentUserId = null;
@@ -73,8 +46,8 @@ function renderAllPlayers(players) {
         ${(data.battlefield || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join('')}
       </div>
       <div class="hand-view">
-        ${isYou ? (data.hand || []).map((card, index) => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`).join('') 
-                : (data.hand || []).map(() => `<img src="/card-back.jpg" alt="Card Back" />`).join('')}
+        ${isYou ? (data.hand || []).map((card, index) => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`).join('')
+                : (data.hand || []).map(() => `<img src="card-back.jpg" alt="Card Back" />`).join('')}
       </div>
     `;
     area.appendChild(panel);
