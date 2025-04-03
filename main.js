@@ -138,20 +138,19 @@ async function joinGameRoom(roomCode) {
 }
 
 function setupUIEvents() {
-  // Only run if we're on the letsplay.html page.
+  // Only run on letsplay.html (game board page)
   if (!window.location.pathname.includes("letsplay.html")) {
-    console.log("Not on letsplay.html; skipping UI event setup.");
+    console.log("Not on game board page; skipping UI event setup.");
     return;
   }
 
-  // Ensure that the game board exists.
+  // Ensure game board exists
   const gameBoard = document.getElementById('game-board');
   if (!gameBoard) {
     console.warn("Game board element not found. Skipping UI event setup.");
     return;
   }
 
-  // If URL contains a room parameter, we're in game board mode.
   if (queryParams.room) {
     const roomCode = queryParams.room;
     const playerCount = queryParams.players || "4";
@@ -159,8 +158,6 @@ function setupUIEvents() {
     if (boardContainer) {
       boardContainer.classList.remove('players-2','players-3','players-4','players-5');
       boardContainer.classList.add(`players-${playerCount}`);
-    } else {
-      console.warn("Board container not found.");
     }
     const roomCodeOverlay = document.getElementById('room-code');
     if (roomCodeOverlay) {
@@ -168,9 +165,15 @@ function setupUIEvents() {
       roomCodeOverlay.classList.remove('hidden');
     }
     joinGameRoom(roomCode);
+  } else {
+    // If no room is specified, show a message or redirect.
+    const noRoomEl = document.getElementById('no-room');
+    if (noRoomEl) {
+      noRoomEl.style.display = "block";
+    }
   }
 
-  // Set up "Next Phase" button
+  // Set up "Next Phase" button.
   const phaseButton = document.getElementById('next-phase');
   if (phaseButton) {
     phaseButton.addEventListener('click', async () => {
@@ -184,7 +187,6 @@ function setupUIEvents() {
   }
 }
 
-// Wait until DOM is fully loaded before setting up UI events.
 document.addEventListener('DOMContentLoaded', () => {
   onAuthStateChanged(auth, user => {
     if (user) {
