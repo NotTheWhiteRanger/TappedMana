@@ -1,7 +1,6 @@
 // letsplay.js
 import { getDatabase, ref, set, update, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { resolveCardEffects, nextPlayerTurn, drawCards } from "./gameEngine.js";
 import { commanderDecks } from "./decks.js";
 
 const db = getDatabase();
@@ -26,55 +25,101 @@ function getQueryParams() {
 }
 const queryParams = getQueryParams();
 
-// Get deck selection from URL parameters or from a deck-selection element
+// Get deck selection from URL or UI
 function getSelectedDeck() {
   return queryParams.deck ||
          (document.getElementById('deck-selection') && document.getElementById('deck-selection').value) ||
          'deck1';
 }
 
-// Join game room: store user info, deck selection, and initial hand.
+// Helper: Fisher–Yates shuffle
+function shuffle(array) {
+  let currentIndex = array.length, randomIndex;
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    // Swap the elements
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+  return array;
+}
+
+/**
+ * Draws `count` cards from the player's library (deck) stored in Firebase.
+ * The drawn cards are removed from the library so they are not drawn again.
+ */
+async function drawFromLibrary(roomCode, playerId, count = 1) {
+  const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
+  const snap = await get(playerRef);
+  const player = snap.val();
+  let library = player.library || [];
+  // If there aren’t enough cards left, draw as many as possible.
+  if (library.length < count) count = library.length;
+  const drawn = library.splice(0, count);
+  await update(playerRef, { library });
+  return drawn;
+}
+
+/**
+ * When a player joins a game, load their chosen deck, shuffle it, and draw an opening hand.
+ */
 async function joinGameRoom(roomCode) {
   currentRoom = roomCode;
   const user = auth.currentUser;
   if (!user) return;
   currentUserId = user.uid;
   
-  const selectedDeck = getSelectedDeck();
+  // Get selected deck ID and find the deck object
+  const selectedDeckId = getSelectedDeck();
+  const selectedDeckObj = commanderDecks.find(deck => deck.id === selectedDeckId);
+  if (!selectedDeckObj) {
+    console.error("Selected deck not found");
+    return;
+  }
+  
+  // Copy and shuffle the deck list to serve as the player's library.
+  let library = [...selectedDeckObj.deckList];
+  library = shuffle(library);
+  
+  // Draw the top 7 cards as an opening hand.
+  const openingHand = library.splice(0, 7);
+  
   const playerRef = ref(db, `rooms/${roomCode}/players/${currentUserId}`);
-  const openingHand = await drawCards(7);
-
   await set(playerRef, {
     name: currentUserName,
     hand: openingHand,
+    library,          // Store the remaining deck as the library.
     battlefield: [],
     graveyard: [],
     exile: [],
     commandZone: [],
     life: 40,
-    deck: selectedDeck,
+    deck: selectedDeckId,
     counters: {}
   });
-
+  
+  // Set initial turn information if needed.
   const turnRef = ref(db, `rooms/${roomCode}/turn`);
   const turnSnap = await get(turnRef);
   if (!turnSnap.exists()) {
     await set(turnRef, currentUserId);
-    await update(playerRef, { hand: [...openingHand, ...(await drawCards(1))] });
+    // Draw an extra card at turn start (if desired)
+    const extraCards = await drawFromLibrary(roomCode, currentUserId, 1);
+    await update(playerRef, { hand: [...openingHand, ...extraCards] });
   }
-
+  
   await set(ref(db, `rooms/${roomCode}/phase`), "Beginning");
   setupRealtimeUpdates(roomCode);
 }
 
-// Utility: get a card's image URL
-function getCardImage(card) {
-  return card.image_uris?.small ||
-         card.card_faces?.[0]?.image_uris?.small ||
-         "";
+// Utility: get a card image URL (if you later integrate with an API)
+function getCardImage(cardName) {
+  // For now, simply return a placeholder or a URL constructed from the card name.
+  // You could integrate with Scryfall image search here.
+  return `https://via.placeholder.com/80x120.png?text=${encodeURIComponent(cardName)}`;
 }
 
-// Render all players and their fields (including counters and deck info)
+// Render players’ boards including hand and battlefield.
 function renderAllPlayers(players, currentTurnPlayer) {
   const area = document.getElementById("players-area");
   if (!area) return;
@@ -92,35 +137,15 @@ function renderAllPlayers(players, currentTurnPlayer) {
         ${data.counters ? `<p>Counters: ${JSON.stringify(data.counters)}</p>` : ""}
       </div>
       <div class="player-fields">
-        <div class="zone command-zone">
-          <p>Command Zone</p>
-          ${(data.commandZone || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
-        </div>
-        <div class="zone battlefield-zone">
-          <p>Battlefield</p>
-          ${(data.battlefield || []).map(card => {
-            const counterText = card.counters ? Object.entries(card.counters)
-              .map(([type, amount]) => `${type}: ${amount}`)
-              .join(", ") : "";
-            return `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}${counterText ? ' (' + counterText + ')' : ''}" />`;
-          }).join("")}
-        </div>
-        <div class="zone graveyard-zone">
-          <p>Graveyard</p>
-          ${(data.graveyard || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
-        </div>
-        <div class="zone exile-zone">
-          <p>Exile</p>
-          ${(data.exile || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
-        </div>
         <div class="zone hand-zone">
           <p>Hand</p>
           ${isYou
             ? (data.hand || []).map((card, index) =>
-                `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`
+                `<img src="${getCardImage(card)}" alt="${card}" title="${card}" data-index="${index}" class="hand-card" />`
               ).join("")
             : (data.hand || []).map(() => `<img src="card-back.jpg" alt="Card Back" />`).join("")}
         </div>
+        <!-- Other zones like battlefield, graveyard, etc. can be added here -->
       </div>
     `;
     area.appendChild(board);
@@ -128,7 +153,7 @@ function renderAllPlayers(players, currentTurnPlayer) {
   attachPlayCardListeners();
 }
 
-// Add click listeners to hand cards so they move to the battlefield with a counter effect.
+// When a hand card is clicked, move it to the battlefield and (if needed) trigger effects.
 function attachPlayCardListeners() {
   const handCards = document.querySelectorAll(".hand-card");
   handCards.forEach(cardImg => {
@@ -139,21 +164,13 @@ function attachPlayCardListeners() {
       const data = snap.val();
       const hand = data.hand || [];
       const battlefield = data.battlefield || [];
-
+      
       if (hand[index]) {
         const card = hand[index];
         battlefield.push(card);
         hand.splice(index, 1);
-        // Add a +1/+1 counter when the card is played.
-        const effects = card.effects || [];
-        effects.push({
-          type: 'COUNTER',
-          target: 'CARD',
-          cardIndex: battlefield.length - 1,
-          counterType: '+1/+1',
-          amount: 1
-        });
-        await resolveCardEffects(currentRoom, currentUserId, effects);
+        // (Optional) Add a +1/+1 counter effect when the card is played.
+        // You could implement additional effects here.
         await update(userRef, { hand, battlefield });
       }
     });
@@ -184,7 +201,7 @@ function setupRealtimeUpdates(roomCode) {
   });
 }
 
-// UI: Check for room code in URL and join game; otherwise, show a message.
+// UI: If a room code exists in the URL, join the game.
 function setupUIEvents() {
   if (!window.location.pathname.includes("letsplay.html")) return;
   const boardContainer = document.getElementById("board-container");
@@ -215,12 +232,41 @@ function setupUIEvents() {
       const nextPhase = phases[(currentIndex + 1) % phases.length];
       await set(ref(db, `rooms/${currentRoom}/phase`), nextPhase);
 
+      // When moving to "End", advance the turn and draw a card from the library.
       if (nextPhase === "End") {
         await nextPlayerTurn(currentRoom);
         await set(ref(db, `rooms/${currentRoom}/phase`), "Beginning");
       }
     });
   }
+}
+
+// Modified turn draw: draw one card from the player's library.
+async function nextPlayerTurn(roomCode) {
+  const playersRef = ref(db, `rooms/${roomCode}/players`);
+  const playersSnap = await get(playersRef);
+  const players = playersSnap.val() || {};
+  const playerIds = Object.keys(players);
+
+  const turnRef = ref(db, `rooms/${roomCode}/turn`);
+  const turnSnap = await get(turnRef);
+  const currentId = turnSnap.val() || playerIds[0];
+
+  const currentIndex = playerIds.indexOf(currentId);
+  const nextIndex = (currentIndex + 1) % playerIds.length;
+  const nextPlayerId = playerIds[nextIndex];
+
+  await set(turnRef, nextPlayerId);
+  await givePlayerStartTurnDraw(roomCode, nextPlayerId);
+}
+
+async function givePlayerStartTurnDraw(roomCode, playerId) {
+  const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
+  const newCard = await drawFromLibrary(roomCode, playerId, 1);
+  const snap = await get(playerRef);
+  const player = snap.val();
+  const updatedHand = [...(player.hand || []), ...newCard];
+  await update(playerRef, { hand: updatedHand });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
