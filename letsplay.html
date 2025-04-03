@@ -1,73 +1,237 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>MTG Commander Online - Game Board</title>
-  <link rel="stylesheet" href="styles.css">
+// letsplay.js
+import { getDatabase, ref, set, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { resolveCardEffects, nextPlayerTurn, drawCards } from "./gameEngine.js";
+import { commanderDecks } from "./decks.js";
 
-  <!-- Firebase Initialization -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    const firebaseConfig = {
-      apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
-      authDomain: "new-chat-8d4f4.firebaseapp.com",
-      databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
-      projectId: "new-chat-8d4f4",
-      storageBucket: "new-chat-8d4f4.firebasestorage.app",
-      messagingSenderId: "825077448854",
-      appId: "1:825077448854:web:3906174c00e1f6604782b7"
-    };
-    initializeApp(firebaseConfig);
-  </script>
+const db = getDatabase();
+const auth = getAuth();
 
-  <!-- Game Logic -->
-  <script type="module" src="main.js"></script>
-</head>
-<body>
-  <!-- Room Code Display -->
-  <div id="room-code" class="overlay hidden"></div>
+let currentRoom = null;
+let currentUserId = null;
+let currentUserName = "Player" + Math.floor(Math.random() * 1000);
+let gamePhase = "Beginning";
 
-  <!-- Board Container (Host's Board) -->
-  <div id="board-container">
-    <!-- Zones (adjust positions in styles.css) -->
-    <div id="hex-zone" class="zone">
-      <p>Commander</p>
-    </div>
-    <div id="battlefield-zone" class="zone">
-      <div class="horizontal-divider"></div>
-    </div>
-    <div id="left-rect-top" class="zone side-zone">
-      <p>Graveyard</p>
-    </div>
-    <div id="right-rect-top" class="zone side-zone">
-      <p>Exile</p>
-    </div>
-    <div id="right-rect-bottom" class="zone side-zone">
-      <p>Library</p>
-    </div>
-  </div>
+// Utility: parse URL parameters
+function getQueryParams() {
+  const params = {};
+  const queryString = window.location.search.substring(1);
+  const pairs = queryString.split("&");
+  for (const pair of pairs) {
+    if (!pair) continue;
+    const [key, value] = pair.split("=");
+    params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+  }
+  return params;
+}
+const queryParams = getQueryParams();
 
-  <!-- Game Info Panel -->
-  <div id="game-info">
-    <p id="phase-display">Phase: Beginning</p>
-    <button id="next-phase">Next Phase</button>
-  </div>
+// Get deck selection from URL or the deck-selection dropdown
+function getSelectedDeck() {
+  return queryParams.deck ||
+    (document.getElementById('deck-selection') && document.getElementById('deck-selection').value) ||
+    'deck1';
+}
 
-  <!-- Players' Fields Panel -->
-  <div id="players-area">
-    <!-- Each player's board (their fields) is rendered here -->
-  </div>
+// When a player joins a game room, their deck and initial game state are stored
+async function joinGameRoom(roomCode) {
+  currentRoom = roomCode;
+  const user = auth.currentUser;
+  if (!user) return;
+  currentUserId = user.uid;
+  
+  // Retrieve the selected deck
+  const selectedDeck = getSelectedDeck();
+  
+  const playerRef = ref(db, `rooms/${roomCode}/players/${currentUserId}`);
+  const openingHand = await drawCards(7);
 
-  <!-- Player Hand -->
-  <div id="player-hand">
-    <h2>Your Hand</h2>
-    <div id="hand-cards"></div>
-  </div>
+  await set(playerRef, {
+    name: currentUserName,
+    hand: openingHand,
+    battlefield: [],
+    graveyard: [],
+    exile: [],
+    commandZone: [],
+    life: 40,
+    deck: selectedDeck,  // Save the chosen commander deck
+    counters: {}         // Prepare field for any player counters
+  });
 
-  <!-- Optional placeholder if no room is provided -->
-  <div id="no-room" style="text-align: center; margin-top: 50px; display: none;">
-    <p>No game room specified.</p>
-    <button onclick="window.location.href='index.html'">Return to Lobby</button>
-  </div>
-</body>
-</html>
+  const turnRef = ref(db, `rooms/${roomCode}/turn`);
+  const turnSnap = await get(turnRef);
+  if (!turnSnap.exists()) {
+    await set(turnRef, currentUserId);
+    await update(playerRef, { hand: [...openingHand, ...(await drawCards(1))] });
+  }
+
+  await set(ref(db, `rooms/${roomCode}/phase`), "Beginning");
+  setupRealtimeUpdates(roomCode);
+}
+
+function getCardImage(card) {
+  return card.image_uris?.small ||
+         card.card_faces?.[0]?.image_uris?.small ||
+         "";
+}
+
+// Render players’ boards, including deck and counter information
+function renderAllPlayers(players, currentTurnPlayer) {
+  const area = document.getElementById("players-area");
+  if (!area) return;
+  area.innerHTML = "";
+  Object.entries(players).forEach(([uid, data]) => {
+    const isYou = uid === currentUserId;
+    const isTurn = uid === currentTurnPlayer;
+    const board = document.createElement("div");
+    board.classList.add("player-board");
+    board.innerHTML = `
+      <div class="player-header">
+        <h3>${data.name}${isYou ? " (You)" : ""}${isTurn ? " 🔁" : ""}</h3>
+        <p>Life: ${data.life || 40}</p>
+        <p>Deck: ${data.deck}</p>
+        ${data.counters ? `<p>Counters: ${JSON.stringify(data.counters)}</p>` : ""}
+      </div>
+      <div class="player-fields">
+        <div class="zone command-zone">
+          <p>Command Zone</p>
+          ${(data.commandZone || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
+        </div>
+        <div class="zone battlefield-zone">
+          <p>Battlefield</p>
+          ${(data.battlefield || []).map(card => {
+            const counterText = card.counters ? Object.entries(card.counters)
+              .map(([type, amount]) => `${type}: ${amount}`)
+              .join(", ") : "";
+            return `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}${counterText ? ' (' + counterText + ')' : ''}" />`;
+          }).join("")}
+        </div>
+        <div class="zone graveyard-zone">
+          <p>Graveyard</p>
+          ${(data.graveyard || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
+        </div>
+        <div class="zone exile-zone">
+          <p>Exile</p>
+          ${(data.exile || []).map(card => `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`).join("")}
+        </div>
+        <div class="zone hand-zone">
+          <p>Hand</p>
+          ${isYou
+            ? (data.hand || []).map((card, index) =>
+                `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" data-index="${index}" class="hand-card" />`
+              ).join("")
+            : (data.hand || []).map(() => `<img src="card-back.jpg" alt="Card Back" />`).join("")}
+        </div>
+      </div>
+    `;
+    area.appendChild(board);
+  });
+  attachPlayCardListeners();
+}
+
+// When a hand card is clicked, move it to the battlefield and apply a COUNTER effect.
+function attachPlayCardListeners() {
+  const handCards = document.querySelectorAll(".hand-card");
+  handCards.forEach(cardImg => {
+    cardImg.addEventListener("click", async () => {
+      const index = parseInt(cardImg.getAttribute("data-index"));
+      const userRef = ref(db, `rooms/${currentRoom}/players/${currentUserId}`);
+      const snap = await get(userRef);
+      const data = snap.val();
+      const hand = data.hand || [];
+      const battlefield = data.battlefield || [];
+
+      if (hand[index]) {
+        const card = hand[index];
+        battlefield.push(card);
+        hand.splice(index, 1);
+        // For example: add a +1/+1 counter when a card is played.
+        const effects = card.effects || [];
+        effects.push({
+          type: 'COUNTER',
+          target: 'CARD',
+          cardIndex: battlefield.length - 1, // index of the card just added
+          counterType: '+1/+1',
+          amount: 1
+        });
+        await resolveCardEffects(currentRoom, currentUserId, effects);
+        await update(userRef, { hand, battlefield });
+      }
+    });
+  });
+}
+
+// Set up realtime listeners for players, turn, and phase changes.
+function setupRealtimeUpdates(roomCode) {
+  const roomRef = ref(db, `rooms/${roomCode}/players`);
+  const turnRef = ref(db, `rooms/${roomCode}/turn`);
+  const phaseRef = ref(db, `rooms/${roomCode}/phase`);
+
+  let currentTurnPlayer = null;
+
+  onValue(turnRef, snapshot => {
+    currentTurnPlayer = snapshot.val();
+  });
+
+  onValue(roomRef, snapshot => {
+    const players = snapshot.val() || {};
+    renderAllPlayers(players, currentTurnPlayer);
+  });
+
+  onValue(phaseRef, snapshot => {
+    const phaseDisplay = document.getElementById("phase-display");
+    gamePhase = snapshot.val() || "Beginning";
+    if (phaseDisplay) phaseDisplay.textContent = `Phase: ${gamePhase}`;
+  });
+}
+
+// UI setup: If a room code exists in the URL, join that game.
+function setupUIEvents() {
+  if (!window.location.pathname.includes("letsplay.html")) return;
+  const gameBoard = document.getElementById("game-board");
+  if (!gameBoard) return;
+
+  if (queryParams.room) {
+    const roomCode = queryParams.room;
+    const playerCount = queryParams.players || "4";
+    const boardContainer = document.getElementById("board-container");
+    if (boardContainer) {
+      boardContainer.classList.remove("players-2", "players-3", "players-4", "players-5");
+      boardContainer.classList.add(`players-${playerCount}`);
+    }
+
+    const roomCodeOverlay = document.getElementById("room-code");
+    if (roomCodeOverlay) {
+      roomCodeOverlay.textContent = `Room Code: ${roomCode}`;
+      roomCodeOverlay.classList.remove("hidden");
+    }
+
+    joinGameRoom(roomCode);
+  } else {
+    const noRoomEl = document.getElementById("no-room");
+    if (noRoomEl) noRoomEl.style.display = "block";
+  }
+
+  const phaseButton = document.getElementById("next-phase");
+  if (phaseButton) {
+    phaseButton.addEventListener("click", async () => {
+      const phases = ["Beginning", "Main", "Combat", "Second Main", "End"];
+      const currentIndex = phases.indexOf(gamePhase);
+      const nextPhase = phases[(currentIndex + 1) % phases.length];
+      await set(ref(db, `rooms/${currentRoom}/phase`), nextPhase);
+
+      if (nextPhase === "End") {
+        await nextPlayerTurn(currentRoom);
+        await set(ref(db, `rooms/${currentRoom}/phase`), "Beginning");
+      }
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      setupUIEvents();
+    }
+  });
+});
