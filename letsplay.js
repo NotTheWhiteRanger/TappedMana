@@ -12,7 +12,7 @@ let currentUserId = null;
 let currentUserName = "Player" + Math.floor(Math.random() * 1000);
 let gamePhase = "Beginning";
 
-// Utility: Parse URL parameters into an object.
+// Utility: Parse URL parameters.
 function getQueryParams() {
   const params = {};
   const queryString = window.location.search.substring(1);
@@ -26,7 +26,7 @@ function getQueryParams() {
 }
 const queryParams = getQueryParams();
 
-// Get the selected deck ID from URL parameters or from the deck-selection element.
+// Get selected deck ID from URL or deck-selection UI.
 function getSelectedDeck() {
   return queryParams.deck ||
          (document.getElementById('deck-selection') && document.getElementById('deck-selection').value) ||
@@ -45,8 +45,8 @@ function shuffle(array) {
 }
 
 /**
- * Helper: Draw cards from the player's library.
- * The library is stored as an array of card objects; drawn cards are removed.
+ * Draw cards from the player's library stored in Firebase.
+ * Drawn cards are removed from the library.
  */
 async function drawFromLibrary(roomCode, playerId, count = 1) {
   const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
@@ -60,8 +60,8 @@ async function drawFromLibrary(roomCode, playerId, count = 1) {
 }
 
 /**
- * When a player joins a game, load their selected deck, convert each card name into a full card object
- * by fetching details from Scryfall, shuffle the deck, draw an opening hand, and store the remaining library.
+ * When a player joins a game, load their selected deck, convert each card name to a full card object,
+ * shuffle the deck, draw an opening hand, and store the remaining cards as their library.
  */
 async function joinGameRoom(roomCode) {
   currentRoom = roomCode;
@@ -76,12 +76,12 @@ async function joinGameRoom(roomCode) {
     return;
   }
   
-  // Clone the deck list (an array of card names) and shuffle it.
+  // Clone and shuffle the deck list (an array of card names).
   let library = [...selectedDeckObj.deckList];
   library = shuffle(library);
   console.log("Shuffled library (names):", library);
   
-  // Convert each card name into a full card object from Scryfall.
+  // Convert each card name to a full card object via Scryfall.
   library = await Promise.all(library.map(cardName => fetchCardByName(cardName)));
   console.log("Shuffled library (card objects):", library);
   
@@ -116,7 +116,9 @@ async function joinGameRoom(roomCode) {
   setupRealtimeUpdates(roomCode);
 }
 
-// Render players' boards (hand and other zones).
+/**
+ * Renders each player's board, including Hand and Battlefield zones.
+ */
 function renderAllPlayers(players, currentTurnPlayer) {
   const area = document.getElementById("players-area");
   if (!area) return;
@@ -142,7 +144,12 @@ function renderAllPlayers(players, currentTurnPlayer) {
               ).join("")
             : (data.hand || []).map(() => `<img src="card-back.jpg" alt="Card Back" />`).join("")}
         </div>
-        <!-- Additional zones (battlefield, graveyard, etc.) can be added here -->
+        <div class="zone battlefield-zone">
+          <p>Battlefield</p>
+          ${(data.battlefield || []).map(card =>
+              `<img src="${getCardImage(card)}" alt="${card.name}" title="${card.name}" />`
+            ).join("")}
+        </div>
       </div>
     `;
     area.appendChild(board);
@@ -150,7 +157,10 @@ function renderAllPlayers(players, currentTurnPlayer) {
   attachPlayCardListeners();
 }
 
-// Attach click events to hand cards so they can be played (moved to battlefield).
+/**
+ * Attaches click events to hand cards.
+ * When tapped, the card is moved from the hand to the battlefield.
+ */
 function attachPlayCardListeners() {
   const handCards = document.querySelectorAll(".hand-card");
   handCards.forEach(cardImg => {
@@ -172,7 +182,9 @@ function attachPlayCardListeners() {
   });
 }
 
-// Set up realtime Firebase listeners for players, turn, and phase updates.
+/**
+ * Sets up realtime Firebase listeners for players, turn, and phase.
+ */
 function setupRealtimeUpdates(roomCode) {
   const roomRef = ref(db, `rooms/${roomCode}/players`);
   const turnRef = ref(db, `rooms/${roomCode}/turn`);
@@ -196,7 +208,9 @@ function setupRealtimeUpdates(roomCode) {
   });
 }
 
-// Set up UI events: join game if room code exists in URL.
+/**
+ * Sets up UI events. If a room code exists in the URL, join that game.
+ */
 function setupUIEvents() {
   if (!window.location.pathname.includes("letsplay.html")) return;
   const boardContainer = document.getElementById("board-container");
