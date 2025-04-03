@@ -58,7 +58,7 @@
     });
   </script>
 
-  <!-- Your game logic -->
+  <!-- Game Logic -->
   <script type="module" src="main.js"></script>
 </head>
 <body>
@@ -78,7 +78,7 @@
   <!-- Game Lobby -->
   <div id="game-lobby" class="hidden">
     <h1>Welcome to MTG Commander Online</h1>
-    <!-- Player Count Selection -->
+    <!-- Player Count Selector -->
     <label for="player-count">Number of Players:</label>
     <select id="player-count">
       <option value="2">2 Players</option>
@@ -94,23 +94,37 @@
 
   <!-- Main Game Board -->
   <div id="game-board" class="hidden">
+    <!-- Board Container mimicking a TCG board layout -->
+    <div id="board-container">
+      <!-- Commander hex zone -->
+      <div id="hex-zone" class="zone">
+        <p>Commander</p>
+      </div>
+      <!-- Battlefield zone -->
+      <div id="battlefield-zone" class="zone">
+        <div class="horizontal-divider"></div>
+      </div>
+      <!-- Left side zone (e.g., Graveyard) -->
+      <div id="left-rect-top" class="zone side-zone">
+        <p>Graveyard</p>
+      </div>
+      <!-- Right side zones -->
+      <div id="right-rect-top" class="zone side-zone">
+        <p>Exile</p>
+      </div>
+      <div id="right-rect-bottom" class="zone side-zone">
+        <p>Library</p>
+      </div>
+    </div>
+
     <!-- Game Info Panel -->
     <div id="game-info">
       <p id="phase-display">Phase: Beginning</p>
       <button id="next-phase">Next Phase</button>
     </div>
 
-    <!-- Player Info Panel -->
+    <!-- Player Info Panel (dynamic) -->
     <div id="players-area"></div>
-
-    <!-- Game Zones -->
-    <div id="game-zones">
-      <div id="stack-zone"><h3>Stack</h3></div>
-      <div id="battlefield-zone"><h3>Battlefield</h3></div>
-      <div id="command-zone"><h3>Command Zone</h3></div>
-      <div id="graveyard-zone"><h3>Graveyards</h3></div>
-      <div id="exile-zone"><h3>Exile</h3></div>
-    </div>
 
     <!-- Player Hand -->
     <div id="player-hand">
