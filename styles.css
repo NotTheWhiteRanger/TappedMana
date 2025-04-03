@@ -1,3 +1,36 @@
+/* Utility classes */
+.hidden {
+  display: none !important;
+}
+
+.overlay {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 1000;
+}
+
+/* Basic page styling */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #1f1f1f;
+  color: #f0f0f0;
+}
+
+/* Layout for Login and Lobby pages */
+#login-page,
+#game-lobby {
+  text-align: center;
+  margin-top: 50px;
+}
+
+/* Player zone styling */
 .player-zone {
   border: 2px solid #333;
   padding: 10px;
@@ -12,6 +45,7 @@
   margin-bottom: 10px;
 }
 
+/* Card display areas */
 .battlefield,
 .hand-view {
   display: flex;
@@ -26,4 +60,20 @@
   border-radius: 4px;
 }
 
+/* Additional layout styling */
+#game-zones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
 
+#game-info {
+  text-align: center;
+  margin: 20px 0;
+}
+
+#player-hand {
+  text-align: center;
+  margin: 20px 0;
+}
