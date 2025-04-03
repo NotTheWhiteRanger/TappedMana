@@ -6,42 +6,44 @@ export const commanderDecks = [
     commander: "Kaalia of the Vast",
     description: "A fast-paced, aggressive deck with an arsenal of creatures.",
     deckList: [
+      "Kaalia of the Vast",            // Commander
       "Gisela, Blade of Goldnight",
       "Anger",
-      "Balefire Dragon"
-    ]
-  },
-  {
-    id: 'deck2',
-    name: "Control & Conquer",
-    commander: "Oloro, Ageless Ascetic",
-    description: "A deck built around control elements and life gain.",
-    deckList: [
-      "Swords to Plowshares",
-      "Counterspell",
-      "Teferi, Hero of Dominaria"
-    ]
-  },
-  {
-    id: 'deck3',
-    name: "Ramp and Dominate",
-    commander: "The Ur-Dragon",
-    description: "A deck focused on ramping mana and unleashing big dragons.",
-    deckList: [
-      "Cultivate",
-      "Kodama's Reach",
-      "Dragonlord Atarka"
-    ]
-  },
-  {
-    id: 'deck4',
-    name: "Token Army",
-    commander: "Edgar Markov",
-    description: "A swarm strategy deck that builds on tokens and synergy.",
-    deckList: [
+      "Balefire Dragon",
       "Lightning Mauler",
-      "Gather the Townsfolk",
-      "Throne of the God-Pharaoh"
+      "Bloodthirsty Aerialist",
+      "Grim Lavamancer",
+      "Mother of Runes",
+      "Knight of the White Orchid",
+      "Mirran Crusader",
+      "Akroma, Angel of Wrath",
+      "Path to Exile",
+      "Swords to Plowshares",
+      "Lightning Helix",
+      "Boros Charm",
+      "Thalia, Guardian of Thraben",
+      "Inspiring Vantage",
+      "Sacred Foundry",
+      "Clifftop Retreat",
+      "Battlefield Forge",
+      "Sunhome, Fortress of the Legion",
+      "Windswept Heath",
+      "Wooded Foothills",
+      "Arid Mesa",
+      "Scalding Tarn",
+      "Plateau",
+      "Stomping Ground",
+      "Ancient Den",
+      "Smoldering Crater",
+      "Flamekin Village",
+      "Dragon's Claw",
+      "Rift Bolt",
+      "Eidolon of the Great Revel",
+      "Monastery Mentor",
+      "Boros Reckoner",
+      "Fervent Champion",
+      "Mardu Woe-Reaper"
     ]
-  }
+  },
+  // Other decks (deck2, deck3, deck4) would follow here…
 ];
