@@ -2,15 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MTG Commander Online</title>
+  <title>MTG Commander Online - Lobby</title>
   <link rel="stylesheet" href="styles.css">
-
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs for login -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
       authDomain: "new-chat-8d4f4.firebaseapp.com",
@@ -27,7 +25,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       const loginPage = document.getElementById('login-page');
       const lobby = document.getElementById('game-lobby');
-      const gameBoard = document.getElementById('game-board');
       const loginForm = document.getElementById('login-form');
 
       loginForm.addEventListener('submit', (e) => {
@@ -52,19 +49,12 @@
         } else {
           loginPage.classList.remove('hidden');
           lobby.classList.add('hidden');
-          gameBoard.classList.add('hidden');
         }
       });
     });
   </script>
-
-  <!-- Game Logic -->
-  <script type="module" src="main.js"></script>
 </head>
 <body>
-  <!-- Room Code Display -->
-  <div id="room-code" class="overlay hidden"></div>
-
   <!-- Login Page -->
   <div id="login-page">
     <h1>Login to MTG Commander Online</h1>
@@ -78,7 +68,6 @@
   <!-- Game Lobby -->
   <div id="game-lobby" class="hidden">
     <h1>Welcome to MTG Commander Online</h1>
-    <!-- Player Count Selector -->
     <label for="player-count">Number of Players:</label>
     <select id="player-count">
       <option value="2">2 Players</option>
@@ -92,48 +81,27 @@
     <button id="join-game">Join Game</button>
   </div>
 
-  <!-- Main Game Board -->
-  <div id="game-board" class="hidden">
-    <!-- Board Container (for the host's main field) -->
-    <div id="board-container">
-      <!-- Commander hex zone -->
-      <div id="hex-zone" class="zone">
-        <p>Commander</p>
-      </div>
-      <!-- Battlefield zone -->
-      <div id="battlefield-zone" class="zone">
-        <div class="horizontal-divider"></div>
-      </div>
-      <!-- Left side zone (Graveyard) -->
-      <div id="left-rect-top" class="zone side-zone">
-        <p>Graveyard</p>
-      </div>
-      <!-- Right side zones -->
-      <div id="right-rect-top" class="zone side-zone">
-        <p>Exile</p>
-      </div>
-      <div id="right-rect-bottom" class="zone side-zone">
-        <p>Library</p>
-      </div>
-    </div>
-
-    <!-- Game Info Panel -->
-    <div id="game-info">
-      <p id="phase-display">Phase: Beginning</p>
-      <button id="next-phase">Next Phase</button>
-    </div>
-
-    <!-- Players' Fields -->
-    <div id="players-area">
-      <!-- Each player's board will be rendered here -->
-    </div>
-
-    <!-- Player Hand -->
-    <div id="player-hand">
-      <h2>Your Hand</h2>
-      <div id="hand-cards"></div>
-      <button id="draw-card">Draw Card</button>
-    </div>
-  </div>
+  <!-- Redirect on create/join -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      const playerCountSelect = document.getElementById('player-count');
+      document.getElementById('create-game').addEventListener('click', () => {
+        const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const playerCount = playerCountSelect.value;
+        // Redirect to letsplay.html with room, players, and mode=create
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&mode=create`;
+      });
+      document.getElementById('join-game').addEventListener('click', () => {
+        const roomCode = document.getElementById('game-code').value.trim().toUpperCase();
+        if (!roomCode) {
+          alert('Enter a valid game code.');
+          return;
+        }
+        const playerCount = playerCountSelect.value;
+        // Redirect to letsplay.html with room, players, and mode=join
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&mode=join`;
+      });
+    });
+  </script>
 </body>
 </html>
