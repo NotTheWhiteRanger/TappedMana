@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TappedMana | Commander Hub</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" />
     <style>
       body {
         margin: 0;
@@ -20,11 +21,27 @@
         align-items: center;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       }
+      .title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
       header h1 {
         margin: 0;
         font-size: 1.8rem;
         color: #ffffff;
       }
+      .ms {
+        font-size: 1.4rem;
+        vertical-align: middle;
+      }
+      .ms-u { color: #60a5fa; }
+      .ms-w { color: #facc15; }
+      .ms-c { color: #9ca3af; }
+      .ms-b { color: #6b7280; }
+      .ms-r { color: #f87171; }
+      .ms-g { color: #34d399; }
+
       nav a {
         margin-left: 1.5rem;
         text-decoration: none;
@@ -75,6 +92,46 @@
       .card p {
         color: #475569;
       }
+      .top-decks {
+        background: #f1f5f9;
+        padding: 3rem 1rem;
+        text-align: center;
+      }
+      .top-decks h2 {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+        color: #1e3a8a;
+      }
+      .deck-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+      }
+      .deck-card {
+        background: #fff;
+        border-radius: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        max-width: 240px;
+        text-align: left;
+      }
+      .deck-card img {
+        width: 100%;
+        display: block;
+      }
+      .deck-card .info {
+        padding: 1rem;
+      }
+      .deck-card .info h3 {
+        margin: 0 0 0.5rem;
+        color: #1e3a8a;
+        font-size: 1.1rem;
+      }
+      .deck-card .info p {
+        font-size: 0.9rem;
+        color: #475569;
+      }
       footer {
         text-align: center;
         padding: 2rem 1rem;
@@ -85,7 +142,15 @@
   </head>
   <body>
     <header>
-      <h1>TappedMana</h1>
+      <div class="title">
+        <h1>TappedMana</h1>
+        <span class="ms ms-u"></span>
+        <span class="ms ms-w"></span>
+        <span class="ms ms-c"></span>
+        <span class="ms ms-b"></span>
+        <span class="ms ms-r"></span>
+        <span class="ms ms-g"></span>
+      </div>
       <nav>
         <a href="#">Home</a>
         <a href="#">Deck Builder</a>
@@ -109,6 +174,32 @@
       <div class="card">
         <h3>Commander Resources</h3>
         <p>Access ban lists, strategy guides, and featured decks curated for Commander players.</p>
+      </div>
+    </section>
+    <section class="top-decks">
+      <h2>Top Commander Decks</h2>
+      <div class="deck-grid">
+        <div class="deck-card">
+          <img src="https://cards.scryfall.io/normal/front/5/f/5f4b5d9f-f8f0-42bb-8e6c-f59eb716420f.jpg" alt="Atraxa, Praetors' Voice" />
+          <div class="info">
+            <h3>Atraxa Superfriends</h3>
+            <p>Control, proliferate, and dominate the board with Planeswalkers.</p>
+          </div>
+        </div>
+        <div class="deck-card">
+          <img src="https://cards.scryfall.io/normal/front/d/2/d24ff43e-fdc7-4dc8-a917-0b84921c8f41.jpg" alt="Edgar Markov" />
+          <div class="info">
+            <h3>Vampire Aggro</h3>
+            <p>Fast-paced tribal strategy using Edgar's vampire swarm.</p>
+          </div>
+        </div>
+        <div class="deck-card">
+          <img src="https://cards.scryfall.io/normal/front/4/8/487d9c6a-2b8b-4d96-a6f0-2a61c77ef7d2.jpg" alt="Tatyova, Benthic Druid" />
+          <div class="info">
+            <h3>Lands Matter</h3>
+            <p>Ramp hard, draw cards, and take over with value engines.</p>
+          </div>
+        </div>
       </div>
     </section>
     <footer>
