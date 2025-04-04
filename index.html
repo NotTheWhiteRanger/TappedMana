@@ -2,83 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MTG Commander Online - Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, #2c2c54, #474787);
-      color: #fff;
-      height: 100%;
-    }
-    /* Center the login container */
-    #login-page {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    #login-page h1 {
-      margin-bottom: 1rem;
-    }
-    #login-form {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-      width: 300px;
-      text-align: center;
-    }
-    #login-form input {
-      display: block;
-      width: 100%;
-      margin: 0.5rem 0;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 4px;
-      font-size: 1rem;
-    }
-    #login-form button {
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 1rem;
-      border: none;
-      border-radius: 4px;
-      background: #f39c12;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    #login-form button:hover {
-      background: #e67e22;
-    }
-  </style>
-</head>
-<body>
-  <!-- Login Page -->
-  <div id="login-page">
-    <h1>Login to MTG Commander Online</h1>
-    <form id="login-form">
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <button type="submit">Login</button>
-    </form>
-  </div>
-  
-  <!-- Firebase Login Script -->
+  <title>MTG Commander Online - Lobby</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Firebase SDKs for Login -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    
-    // Firebase configuration (replace with your credentials)
+
     const firebaseConfig = {
       apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
       authDomain: "new-chat-8d4f4.firebaseapp.com",
@@ -88,32 +18,100 @@
       messagingSenderId: "825077448854",
       appId: "1:825077448854:web:3906174c00e1f6604782b7"
     };
-    
-    // Initialize Firebase
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    
+
     document.addEventListener('DOMContentLoaded', () => {
+      const loginPage = document.getElementById('login-page');
+      const lobby = document.getElementById('game-lobby');
       const loginForm = document.getElementById('login-form');
-      
-      loginForm.addEventListener('submit', async (e) => {
+
+      loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = loginForm.email.value;
         const password = loginForm.password.value;
-        try {
-          await signInWithEmailAndPassword(auth, email, password);
-          // Redirect to lobby or update UI upon successful login
-          window.location.href = "lobby.html"; // Update with your lobby URL
-        } catch (error) {
-          alert("Login failed: " + error.message);
-        }
+
+        signInWithEmailAndPassword(auth, email, password)
+          .then(() => {
+            loginPage.classList.add('hidden');
+            lobby.classList.remove('hidden');
+          })
+          .catch((error) => {
+            alert("Login failed: " + error.message);
+          });
       });
-      
+
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          // User is already logged in, redirect accordingly
-          window.location.href = "lobby.html"; // Update with your lobby URL
+          loginPage.classList.add('hidden');
+          lobby.classList.remove('hidden');
+        } else {
+          loginPage.classList.remove('hidden');
+          lobby.classList.add('hidden');
         }
+      });
+    });
+  </script>
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="login-page">
+    <h1>Login to MTG Commander Online</h1>
+    <form id="login-form">
+      <input type="email" name="email" placeholder="Email" required><br><br>
+      <input type="password" name="password" placeholder="Password" required><br><br>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <!-- Lobby -->
+  <div id="game-lobby" class="hidden">
+    <h1>Welcome to MTG Commander Online</h1>
+    <label for="player-count">Number of Players:</label>
+    <select id="player-count">
+      <option value="2">2 Players</option>
+      <option value="3">3 Players</option>
+      <option value="4" selected>4 Players</option>
+      <option value="5">5 Players</option>
+    </select>
+    <br><br>
+    <label for="deck-selection">Select Commander Deck:</label>
+    <select id="deck-selection">
+      <option value="deck1">Aggressive Assault</option>
+      <option value="deck2">Control & Conquer</option>
+      <option value="deck3">Ramp and Dominate</option>
+      <option value="deck4">Token Army</option>
+    </select>
+    <br><br>
+    <button id="create-game">New Game</button>
+    <br><br>
+    <input type="text" id="game-code" placeholder="Enter Game Code">
+    <button id="join-game">Join Game</button>
+  </div>
+
+  <!-- Lobby Navigation Logic -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      const playerCountSelect = document.getElementById('player-count');
+      document.getElementById('create-game').addEventListener('click', () => {
+        // Generate a room code for new game
+        const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const playerCount = playerCountSelect.value;
+        const deckSelection = document.getElementById('deck-selection').value;
+        // Redirect to game page with parameters including the deck choice
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&deck=${deckSelection}&mode=create`;
+      });
+      document.getElementById('join-game').addEventListener('click', () => {
+        const roomCode = document.getElementById('game-code').value.trim().toUpperCase();
+        if (!roomCode) {
+          alert("Please enter a valid game code.");
+          return;
+        }
+        const playerCount = playerCountSelect.value;
+        const deckSelection = document.getElementById('deck-selection').value;
+        // Redirect to game page with parameters including the deck choice
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&deck=${deckSelection}&mode=join`;
       });
     });
   </script>
