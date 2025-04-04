@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TappedMana | Commander Hub</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" />
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Roboto', sans-serif;
+        background: linear-gradient(to bottom right, #1e1b4b, #4c1d95);
+        color: #f3f4f6;
+      }
+      header {
+        background-color: #312e81;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        color: #a78bfa;
+      }
+      nav a {
+        margin-left: 1.5rem;
+        text-decoration: none;
+        color: #e0e7ff;
+        font-weight: bold;
+        transition: color 0.3s;
+      }
+      nav a:hover {
+        color: #c084fc;
+      }
+      .hero {
+        text-align: center;
+        padding: 4rem 1rem 2rem;
+      }
+      .hero h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #d8b4fe;
+      }
+      .hero p {
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+        color: #c7d2fe;
+      }
+      .features {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 2rem;
+        gap: 2rem;
+      }
+      .card {
+        background-color: #4338ca;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        max-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: transform 0.3s;
+      }
+      .card:hover {
+        transform: scale(1.05);
+      }
+      .card h3 {
+        margin-top: 0;
+        color: #e9d5ff;
+      }
+      .card p {
+        color: #e0e7ff;
+      }
+      footer {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: #a5b4fc;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>TappedMana</h1>
+      <nav>
+        <a href="#">Home</a>
+        <a href="#">Deck Builder</a>
+        <a href="#">Commander Resources</a>
+        <a href="#">Logout</a>
+      </nav>
+    </header>
+    <section class="hero">
+      <h2>Welcome to the Commander Hub</h2>
+      <p>Your all-in-one platform for building, managing, and battling in the Magic: The Gathering Commander format.</p>
+    </section>
+    <section class="features">
+      <div class="card">
+        <h3>Deck Builder</h3>
+        <p>Create, edit, and share your Commander decks with intuitive tools and Scryfall integration.</p>
+      </div>
+      <div class="card">
+        <h3>Play Online</h3>
+        <p>Join live multiplayer games, track turns, and manage your life total with our online table.</p>
+      </div>
+      <div class="card">
+        <h3>Commander Resources</h3>
+        <p>Access ban lists, strategy guides, and featured decks curated for Commander players.</p>
+      </div>
+    </section>
+    <footer>
+      &copy; 2025 TappedMana. Not affiliated with Wizards of the Coast.
+    </footer>
+  </body>
+</html>
