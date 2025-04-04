@@ -167,3 +167,61 @@ html, body {
 }
 
 /* (Optional) Additional styling for any other zones */
+
+
+/* -------------------------------------- */
+/* Card Fan Layout for Player's Hand      */
+/* -------------------------------------- */
+
+/* Container for the fan layout; you can use this instead of or in addition to #player-hand */
+#hand-container {
+  position: relative;
+  width: 100%;
+  height: 220px; /* Adjust height as needed to fit your card images */
+  perspective: 1000px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  margin-top: 20px;
+}
+
+.hand-card {
+  position: absolute;
+  width: 100px;
+  height: 140px;
+  transform-origin: bottom center;
+  transition: transform 0.2s;
+}
+
+.hand-card img {
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+}
+
+/* Fan effect for 5 cards (adjust left values as needed) */
+.hand-card:nth-child(1) {
+  transform: rotate(-20deg);
+  left: -160px;
+}
+.hand-card:nth-child(2) {
+  transform: rotate(-10deg);
+  left: -80px;
+}
+.hand-card:nth-child(3) {
+  transform: rotate(0deg);
+  left: 0;
+}
+.hand-card:nth-child(4) {
+  transform: rotate(10deg);
+  left: 80px;
+}
+.hand-card:nth-child(5) {
+  transform: rotate(20deg);
+  left: 160px;
+}
+
+.hand-card:hover {
+  transform: translateY(-20px) scale(1.05) !important;
+  z-index: 10;
+}
