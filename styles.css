@@ -160,7 +160,7 @@ html, body {
   border-radius: 4px;
 }
 
-/* Player Hand Styling */
+/* Player Hand Styling (existing) */
 #player-hand {
   text-align: center;
   margin: 20px 0;
@@ -169,58 +169,72 @@ html, body {
 /* (Optional) Additional styling for any other zones */
 
 
-/* -------------------------------------- */
-/* Card Fan Layout for Player's Hand      */
-/* -------------------------------------- */
+/* ----------------------------------------------------- */
+/* Updated Fan Layout for Player Hand (Drag & Drop Ready) */
+/* ----------------------------------------------------- */
 
-/* Container for the fan layout; you can use this instead of or in addition to #player-hand */
+/* Container for player's hand: Positioned where "Your Hand" used to be */
+#player-hand-zone {
+  position: fixed; /* Adjust as needed; fixed anchors it relative to the viewport */
+  bottom: 20px;    /* Distance from bottom */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;    /* Adjust width for the number of cards */
+  height: 240px;   /* Enough height to display larger cards */
+  z-index: 100;    /* Ensure it appears above other content */
+  /* No text, so only the cards show */
+}
+
+/* Container that holds the fan of cards */
 #hand-container {
   position: relative;
   width: 100%;
-  height: 220px; /* Adjust height as needed to fit your card images */
+  height: 100%;
   perspective: 1000px;
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  margin-top: 20px;
 }
 
+/* Each card in the hand */
 .hand-card {
   position: absolute;
-  width: 100px;
-  height: 140px;
+  width: 140px;   /* Increased width for better visibility */
+  height: 200px;  /* Increased height for better visibility */
   transform-origin: bottom center;
   transition: transform 0.2s;
 }
 
+/* Card image styling */
 .hand-card img {
   width: 100%;
   height: 100%;
   border-radius: 5px;
 }
 
-/* Fan effect for 5 cards (adjust left values as needed) */
+/* Fan effect for 5 cards: Adjust rotations and horizontal positions */
 .hand-card:nth-child(1) {
-  transform: rotate(-20deg);
-  left: -160px;
+  transform: rotate(-25deg);
+  left: 0;
 }
 .hand-card:nth-child(2) {
-  transform: rotate(-10deg);
-  left: -80px;
+  transform: rotate(-12deg);
+  left: 120px;
 }
 .hand-card:nth-child(3) {
   transform: rotate(0deg);
-  left: 0;
+  left: 240px;
 }
 .hand-card:nth-child(4) {
-  transform: rotate(10deg);
-  left: 80px;
+  transform: rotate(12deg);
+  left: 360px;
 }
 .hand-card:nth-child(5) {
-  transform: rotate(20deg);
-  left: 160px;
+  transform: rotate(25deg);
+  left: 480px;
 }
 
+/* Hover effect for cards */
 .hand-card:hover {
   transform: translateY(-20px) scale(1.05) !important;
   z-index: 10;
