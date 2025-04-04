@@ -4,13 +4,15 @@
   <meta charset="UTF-8">
   <title>MTG Commander Online - Lobby</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+
+  <!-- Inline Styles for Demo -->
   <style>
-    /* Global Styles */
+    /* Global Page Styling */
     html, body {
       margin: 0;
       padding: 0;
@@ -19,7 +21,11 @@
       height: 100%;
       color: #fff;
     }
-    /* Login Page Container */
+    .hidden {
+      display: none;
+    }
+
+    /* LOGIN PAGE STYLES */
     #login-page {
       display: flex;
       flex-direction: column;
@@ -27,7 +33,6 @@
       align-items: center;
       height: 100vh;
     }
-    /* Login Form Card */
     #login-form {
       background: rgba(0, 0, 0, 0.7);
       padding: 2rem 2.5rem;
@@ -35,13 +40,11 @@
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
       width: 320px;
       text-align: center;
-      margin-top: 1rem;
     }
     #login-page h1 {
       font-size: 1.8rem;
       margin-bottom: 0.5rem;
     }
-    /* Input Styles */
     #login-form input {
       width: 100%;
       padding: 0.75rem;
@@ -50,7 +53,6 @@
       border-radius: 5px;
       font-size: 1rem;
     }
-    /* Button Styles */
     #login-form button {
       width: 100%;
       padding: 0.75rem;
@@ -67,28 +69,54 @@
     #login-form button:hover {
       background: #e67e22;
     }
-    /* Hide elements by default */
-    .hidden {
-      display: none;
+
+    /* LOBBY PAGE STYLES */
+    /* 1) A container to center the lobby content vertically and horizontally */
+    #lobby-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-    /* Lobby Styling (Basic) */
+    /* 2) A “card” style for the lobby content */
     #game-lobby {
-      padding: 2rem;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2rem 2.5rem;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+      width: 350px;
       text-align: center;
     }
+    #game-lobby h1 {
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+    }
+    #game-lobby label {
+      display: block;
+      text-align: left;
+      margin-top: 1rem;
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+    }
     #game-lobby select,
-    #game-lobby input,
-    #game-lobby button {
+    #game-lobby input {
+      width: 100%;
       padding: 0.75rem;
-      margin: 0.5rem;
-      font-size: 1rem;
+      margin-bottom: 1rem;
       border: none;
       border-radius: 5px;
+      font-size: 1rem;
     }
     #game-lobby button {
+      width: 48%;
+      padding: 0.75rem;
+      margin: 0.5rem 1%;
+      border: none;
+      border-radius: 5px;
       background: #f39c12;
       color: #fff;
       font-weight: 600;
+      font-size: 1rem;
       cursor: pointer;
       transition: background 0.3s;
     }
@@ -96,19 +124,20 @@
       background: #e67e22;
     }
   </style>
+
   <!-- Firebase SDKs for Login -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
-      authDomain: "new-chat-8d4f4.firebaseapp.com",
-      databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
-      projectId: "new-chat-8d4f4",
-      storageBucket: "new-chat-8d4f4.firebasestorage.app",
-      messagingSenderId: "825077448854",
-      appId: "1:825077448854:web:3906174c00e1f6604782b7"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -116,7 +145,8 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       const loginPage = document.getElementById('login-page');
-      const lobby = document.getElementById('game-lobby');
+      const lobbyContainer = document.getElementById('lobby-container');
+      const gameLobby = document.getElementById('game-lobby');
       const loginForm = document.getElementById('login-form');
 
       loginForm.addEventListener('submit', (e) => {
@@ -127,7 +157,7 @@
         signInWithEmailAndPassword(auth, email, password)
           .then(() => {
             loginPage.classList.add('hidden');
-            lobby.classList.remove('hidden');
+            lobbyContainer.classList.remove('hidden');
           })
           .catch((error) => {
             alert("Login failed: " + error.message);
@@ -137,16 +167,17 @@
       onAuthStateChanged(auth, (user) => {
         if (user) {
           loginPage.classList.add('hidden');
-          lobby.classList.remove('hidden');
+          lobbyContainer.classList.remove('hidden');
         } else {
           loginPage.classList.remove('hidden');
-          lobby.classList.add('hidden');
+          lobbyContainer.classList.add('hidden');
         }
       });
     });
   </script>
 </head>
 <body>
+
   <!-- Login Page -->
   <div id="login-page">
     <h1>Login to MTG Commander Online</h1>
@@ -157,29 +188,33 @@
     </form>
   </div>
 
-  <!-- Lobby -->
-  <div id="game-lobby" class="hidden">
-    <h1>Welcome to MTG Commander Online</h1>
-    <label for="player-count">Number of Players:</label>
-    <select id="player-count">
-      <option value="2">2 Players</option>
-      <option value="3">3 Players</option>
-      <option value="4" selected>4 Players</option>
-      <option value="5">5 Players</option>
-    </select>
-    <br><br>
-    <label for="deck-selection">Select Commander Deck:</label>
-    <select id="deck-selection">
-      <option value="deck1">Aggressive Assault</option>
-      <option value="deck2">Control & Conquer</option>
-      <option value="deck3">Ramp and Dominate</option>
-      <option value="deck4">Token Army</option>
-    </select>
-    <br><br>
-    <button id="create-game">New Game</button>
-    <br><br>
-    <input type="text" id="game-code" placeholder="Enter Game Code">
-    <button id="join-game">Join Game</button>
+  <!-- Lobby Container -->
+  <div id="lobby-container" class="hidden">
+    <!-- Lobby Card -->
+    <div id="game-lobby">
+      <h1>Welcome to MTG Commander Online</h1>
+
+      <label for="player-count">Number of Players:</label>
+      <select id="player-count">
+        <option value="2">2 Players</option>
+        <option value="3">3 Players</option>
+        <option value="4" selected>4 Players</option>
+        <option value="5">5 Players</option>
+      </select>
+
+      <label for="deck-selection">Select Commander Deck:</label>
+      <select id="deck-selection">
+        <option value="deck1">Aggressive Assault</option>
+        <option value="deck2">Control & Conquer</option>
+        <option value="deck3">Ramp and Dominate</option>
+        <option value="deck4">Token Army</option>
+      </select>
+
+      <button id="create-game">New Game</button>
+
+      <input type="text" id="game-code" placeholder="Enter Game Code">
+      <button id="join-game">Join Game</button>
+    </div>
   </div>
 
   <!-- Lobby Navigation Logic -->
