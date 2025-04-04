@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | TappedMana</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" />
+    <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+        background: linear-gradient(to bottom right, #1e3a8a, #3b82f6);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .login-container {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        width: 100%;
+        max-width: 400px;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+      input {
+        width: 100%;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+      }
+      button {
+        width: 100%;
+        padding: 0.75rem;
+        background: #3b82f6;
+        border: none;
+        border-radius: 0.5rem;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      .error {
+        color: #f87171;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+    </style>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+      import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
+        authDomain: "new-chat-8d4f4.firebaseapp.com",
+        projectId: "new-chat-8d4f4",
+        storageBucket: "new-chat-8d4f4.appspot.com",
+        messagingSenderId: "998012770880",
+        appId: "1:998012770880:web:0b9cf74d0a92836b65a6d4",
+        databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('login-form');
+        const errorEl = document.getElementById('error-msg');
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = form.email.value;
+          const password = form.password.value;
+
+          try {
+            await signInWithEmailAndPassword(auth, email, password);
+            window.location.href = "/";
+          } catch (err) {
+            errorEl.textContent = "Login failed. Please check your credentials.";
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="login-container">
+      <h1>Login to TappedMana</h1>
+      <div id="error-msg" class="error"></div>
+      <form id="login-form">
+        <label for="email">Email</label>
+        <input type="email" name="email" required />
+        <label for="password">Password</label>
+        <input type="password" name="password" required />
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </body>
+</html>
