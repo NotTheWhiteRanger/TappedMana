@@ -8,10 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-  
-  <!-- Inline Styles -->
+  <link rel="stylesheet" href="styles.css">
   <style>
-    /* Global Styling */
+    /* Global Styles */
     html, body {
       margin: 0;
       padding: 0;
@@ -20,10 +19,7 @@
       height: 100%;
       color: #fff;
     }
-    .hidden {
-      display: none;
-    }
-    /* Login Page */
+    /* Login Page Container */
     #login-page {
       display: flex;
       flex-direction: column;
@@ -31,6 +27,7 @@
       align-items: center;
       height: 100vh;
     }
+    /* Login Form Card */
     #login-form {
       background: rgba(0, 0, 0, 0.7);
       padding: 2rem 2.5rem;
@@ -44,6 +41,7 @@
       font-size: 1.8rem;
       margin-bottom: 0.5rem;
     }
+    /* Input Styles */
     #login-form input {
       width: 100%;
       padding: 0.75rem;
@@ -52,6 +50,7 @@
       border-radius: 5px;
       font-size: 1rem;
     }
+    /* Button Styles */
     #login-form button {
       width: 100%;
       padding: 0.75rem;
@@ -68,50 +67,28 @@
     #login-form button:hover {
       background: #e67e22;
     }
-    /* Lobby Container & Card */
-    #lobby-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    /* Hide elements by default */
+    .hidden {
+      display: none;
     }
+    /* Lobby Styling (Basic) */
     #game-lobby {
-      background: rgba(0, 0, 0, 0.7);
-      padding: 2rem 2.5rem;
-      border-radius: 10px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-      width: 350px;
+      padding: 2rem;
       text-align: center;
     }
-    #game-lobby h1 {
-      margin-bottom: 1rem;
-      font-size: 1.8rem;
-    }
-    #game-lobby label {
-      display: block;
-      text-align: left;
-      margin: 1rem 0 0.25rem;
-      font-weight: 600;
-    }
     #game-lobby select,
-    #game-lobby input {
-      width: 100%;
+    #game-lobby input,
+    #game-lobby button {
       padding: 0.75rem;
-      margin-bottom: 1rem;
+      margin: 0.5rem;
+      font-size: 1rem;
       border: none;
       border-radius: 5px;
-      font-size: 1rem;
     }
     #game-lobby button {
-      width: 48%;
-      padding: 0.75rem;
-      margin: 0.5rem 1%;
-      border: none;
-      border-radius: 5px;
       background: #f39c12;
       color: #fff;
       font-weight: 600;
-      font-size: 1rem;
       cursor: pointer;
       transition: background 0.3s;
     }
@@ -119,13 +96,11 @@
       background: #e67e22;
     }
   </style>
-
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs for Login -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    
-    // Replace with your actual Firebase project configuration
+
     const firebaseConfig = {
       apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
       authDomain: "new-chat-8d4f4.firebaseapp.com",
@@ -140,21 +115,19 @@
     const auth = getAuth(app);
 
     document.addEventListener('DOMContentLoaded', () => {
-      // DOM Elements
       const loginPage = document.getElementById('login-page');
-      const lobbyContainer = document.getElementById('lobby-container');
+      const lobby = document.getElementById('game-lobby');
       const loginForm = document.getElementById('login-form');
-      const playerCountSelect = document.getElementById('player-count');
 
-      // Firebase Authentication for Login
       loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = loginForm.email.value;
         const password = loginForm.password.value;
+
         signInWithEmailAndPassword(auth, email, password)
           .then(() => {
             loginPage.classList.add('hidden');
-            lobbyContainer.classList.remove('hidden');
+            lobby.classList.remove('hidden');
           })
           .catch((error) => {
             alert("Login failed: " + error.message);
@@ -164,29 +137,11 @@
       onAuthStateChanged(auth, (user) => {
         if (user) {
           loginPage.classList.add('hidden');
-          lobbyContainer.classList.remove('hidden');
+          lobby.classList.remove('hidden');
         } else {
           loginPage.classList.remove('hidden');
-          lobbyContainer.classList.add('hidden');
+          lobby.classList.add('hidden');
         }
-      });
-
-      // Lobby Navigation Logic
-      document.getElementById('create-game').addEventListener('click', () => {
-        const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const playerCount = playerCountSelect.value;
-        const deckSelection = document.getElementById('deck-selection').value;
-        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&deck=${deckSelection}&mode=create`;
-      });
-      document.getElementById('join-game').addEventListener('click', () => {
-        const roomCode = document.getElementById('game-code').value.trim().toUpperCase();
-        if (!roomCode) {
-          alert("Please enter a valid game code.");
-          return;
-        }
-        const playerCount = playerCountSelect.value;
-        const deckSelection = document.getElementById('deck-selection').value;
-        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&deck=${deckSelection}&mode=join`;
       });
     });
   </script>
@@ -202,28 +157,55 @@
     </form>
   </div>
 
-  <!-- Lobby Container -->
-  <div id="lobby-container" class="hidden">
-    <div id="game-lobby">
-      <h1>Welcome to MTG Commander Online</h1>
-      <label for="player-count">Number of Players:</label>
-      <select id="player-count">
-        <option value="2">2 Players</option>
-        <option value="3">3 Players</option>
-        <option value="4" selected>4 Players</option>
-        <option value="5">5 Players</option>
-      </select>
-      <label for="deck-selection">Select Commander Deck:</label>
-      <select id="deck-selection">
-        <option value="deck1">Aggressive Assault</option>
-        <option value="deck2">Control & Conquer</option>
-        <option value="deck3">Ramp and Dominate</option>
-        <option value="deck4">Token Army</option>
-      </select>
-      <button id="create-game">New Game</button>
-      <input type="text" id="game-code" placeholder="Enter Game Code">
-      <button id="join-game">Join Game</button>
-    </div>
+  <!-- Lobby -->
+  <div id="game-lobby" class="hidden">
+    <h1>Welcome to MTG Commander Online</h1>
+    <label for="player-count">Number of Players:</label>
+    <select id="player-count">
+      <option value="2">2 Players</option>
+      <option value="3">3 Players</option>
+      <option value="4" selected>4 Players</option>
+      <option value="5">5 Players</option>
+    </select>
+    <br><br>
+    <label for="deck-selection">Select Commander Deck:</label>
+    <select id="deck-selection">
+      <option value="deck1">Aggressive Assault</option>
+      <option value="deck2">Control & Conquer</option>
+      <option value="deck3">Ramp and Dominate</option>
+      <option value="deck4">Token Army</option>
+    </select>
+    <br><br>
+    <button id="create-game">New Game</button>
+    <br><br>
+    <input type="text" id="game-code" placeholder="Enter Game Code">
+    <button id="join-game">Join Game</button>
   </div>
+
+  <!-- Lobby Navigation Logic -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      const playerCountSelect = document.getElementById('player-count');
+      document.getElementById('create-game').addEventListener('click', () => {
+        // Generate a room code for new game
+        const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const playerCount = playerCountSelect.value;
+        const deckSelection = document.getElementById('deck-selection').value;
+        // Redirect to game page with parameters including the deck choice
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&deck=${deckSelection}&mode=create`;
+      });
+      document.getElementById('join-game').addEventListener('click', () => {
+        const roomCode = document.getElementById('game-code').value.trim().toUpperCase();
+        if (!roomCode) {
+          alert("Please enter a valid game code.");
+          return;
+        }
+        const playerCount = playerCountSelect.value;
+        const deckSelection = document.getElementById('deck-selection').value;
+        // Redirect to game page with parameters including the deck choice
+        window.location.href = `letsplay.html?room=${roomCode}&players=${playerCount}&deck=${deckSelection}&mode=join`;
+      });
+    });
+  </script>
 </body>
 </html>
