@@ -2,87 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MTG Commander Online - Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Link to your main stylesheet -->
+  <title>MTG Commander Online - Game Board</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Inline additional styles for the card hand fan layout -->
-  <style>
-    /* Card Fan Layout */
-    #hand-container {
-      position: relative;
-      width: 100%;
-      height: 220px; /* Adjust height as needed for your card images */
-      perspective: 1000px;
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      margin-top: 20px;
-    }
-    .hand-card {
-      position: absolute;
-      width: 100px;
-      height: 140px;
-      transform-origin: bottom center;
-      transition: transform 0.2s;
-    }
-    .hand-card img {
-      width: 100%;
-      height: 100%;
-      border-radius: 5px;
-    }
-    /* Example fan effect for 5 cards */
-    .hand-card:nth-child(1) {
-      transform: rotate(-20deg);
-      left: -160px;
-    }
-    .hand-card:nth-child(2) {
-      transform: rotate(-10deg);
-      left: -80px;
-    }
-    .hand-card:nth-child(3) {
-      transform: rotate(0deg);
-      left: 0;
-    }
-    .hand-card:nth-child(4) {
-      transform: rotate(10deg);
-      left: 80px;
-    }
-    .hand-card:nth-child(5) {
-      transform: rotate(20deg);
-      left: 160px;
-    }
-    .hand-card:hover {
-      transform: translateY(-20px) scale(1.05) !important;
-      z-index: 10;
-    }
-  </style>
+  <!-- Firebase Initialization -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
+      authDomain: "new-chat-8d4f4.firebaseapp.com",
+      databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
+      projectId: "new-chat-8d4f4",
+      storageBucket: "new-chat-8d4f4.firebasestorage.app",
+      messagingSenderId: "825077448854",
+      appId: "1:825077448854:web:3906174c00e1f6604782b7"
+    };
+    initializeApp(firebaseConfig);
+  </script>
 </head>
 <body>
-  <h1>Game Interface</h1>
-  <!-- Other game board elements go here -->
+  <!-- Room Code Display -->
+  <div id="room-code" class="overlay hidden"></div>
 
-  <!-- Hand Container: Paste this where you want the player's hand to appear -->
-  <div id="hand-container">
-    <div class="hand-card">
-      <img src="images/card1.png" alt="Card 1">
+  <!-- Board Container (Host's Board) -->
+  <div id="board-container">
+    <!-- Zones (positions set via styles.css) -->
+    <div id="hex-zone" class="zone">
+      <p>Commander</p>
     </div>
-    <div class="hand-card">
-      <img src="images/card2.png" alt="Card 2">
+    <div id="battlefield-zone" class="zone">
+      <div class="horizontal-divider"></div>
     </div>
-    <div class="hand-card">
-      <img src="images/card3.png" alt="Card 3">
+    <div id="left-rect-top" class="zone side-zone">
+      <p>Graveyard</p>
     </div>
-    <div class="hand-card">
-      <img src="images/card4.png" alt="Card 4">
+    <div id="right-rect-top" class="zone side-zone">
+      <p>Exile</p>
     </div>
-    <div class="hand-card">
-      <img src="images/card5.png" alt="Card 5">
+    <div id="right-rect-bottom" class="zone side-zone">
+      <p>Library</p>
     </div>
   </div>
 
-  <!-- Existing scripts -->
-  <script type="module" src="gameEngine.js"></script>
-  <script type="module" src="main.js"></script>
+  <!-- Game Info Panel -->
+  <div id="game-info">
+    <p id="phase-display">Phase: Beginning</p>
+    <button id="next-phase">Next Phase</button>
+  </div>
+
+  <!-- Players' Fields Panel -->
+  <div id="players-area">
+    <!-- Player boards will be rendered here -->
+  </div>
+
+  <!-- Player Hand -->
+  <div id="player-hand">
+    <h2>Your Hand</h2>
+    <div id="hand-cards"></div>
+  </div>
+
+  <!-- Optional placeholder if no room is provided -->
+  <div id="no-room" style="text-align: center; margin-top: 50px; display: none;">
+    <p>No game room specified.</p>
+    <button onclick="window.location.href='index.html'">Return to Lobby</button>
+  </div>
+
+  <!-- Include game logic -->
+  <script type="module" src="letsplay.js"></script>
 </body>
 </html>
