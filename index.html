@@ -1,3 +1,4 @@
+<!-- This is the full updated index.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -19,6 +20,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       }
       .title {
@@ -42,8 +44,12 @@
       .ms-r { color: #f87171; }
       .ms-g { color: #34d399; }
 
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
       nav a {
-        margin-left: 1.5rem;
         text-decoration: none;
         color: #e0f2fe;
         font-weight: bold;
@@ -52,91 +58,45 @@
       nav a:hover {
         color: #3b82f6;
       }
-      .hero {
-        text-align: center;
-        padding: 4rem 1rem 2rem;
-      }
-      .hero h2 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        color: #1e3a8a;
-      }
-      .hero p {
-        font-size: 1.2rem;
-        max-width: 600px;
-        margin: 0 auto;
-        color: #334155;
-      }
-      .features {
+
+      .search-box-wrapper {
+        flex: 1;
         display: flex;
-        flex-wrap: wrap;
         justify-content: center;
-        padding: 2rem;
-        gap: 2rem;
+        margin: 1rem 0;
       }
-      .card {
-        background-color: #ffffff;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        max-width: 300px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        transition: transform 0.3s;
-      }
-      .card:hover {
-        transform: scale(1.05);
-      }
-      .card h3 {
-        margin-top: 0;
-        color: #1e3a8a;
-      }
-      .card p {
-        color: #475569;
-      }
-      .top-decks {
-        background: #f1f5f9;
-        padding: 3rem 1rem;
-        text-align: center;
-      }
-      .top-decks h2 {
-        font-size: 2rem;
-        margin-bottom: 2rem;
-        color: #1e3a8a;
-      }
-      .deck-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 2rem;
-      }
-      .deck-card {
-        background: #fff;
-        border-radius: 1rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        width: 240px;
-        text-align: center;
-      }
-      .deck-card img {
+      .search-box {
+        position: relative;
         width: 100%;
-        display: block;
+        max-width: 400px;
       }
-      .deck-card .info {
-        padding: 1rem;
+      .search-box input {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        border-radius: 9999px;
+        border: none;
+        outline: none;
+        font-size: 1rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       }
-      .deck-card .info h3 {
-        margin: 0 0 0.5rem;
-        color: #1e3a8a;
-        font-size: 1.1rem;
+      .autocomplete-results {
+        position: absolute;
+        top: 2.5rem;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
       }
-      .deck-card .info p {
-        font-size: 0.9rem;
-        color: #475569;
+      .autocomplete-results div {
+        padding: 0.5rem;
+        cursor: pointer;
       }
-      footer {
-        text-align: center;
-        padding: 2rem 1rem;
-        color: #64748b;
-        font-size: 0.9rem;
+      .autocomplete-results div:hover {
+        background-color: #e0f2fe;
       }
     </style>
   </head>
@@ -151,6 +111,12 @@
         <span class="ms ms-r"></span>
         <span class="ms ms-g"></span>
       </div>
+      <div class="search-box-wrapper">
+        <div class="search-box">
+          <input type="text" id="card-search" placeholder="Search cards..." />
+          <div class="autocomplete-results" id="autocomplete-results"></div>
+        </div>
+      </div>
       <nav>
         <a href="#">Home</a>
         <a href="#">Deck Builder</a>
@@ -159,99 +125,33 @@
       </nav>
     </header>
 
-    <section class="hero">
-      <h2>Welcome to the Commander Hub</h2>
-      <p>Your all-in-one platform for building, managing, and battling in the Magic: The Gathering Commander format.</p>
-    </section>
+    <!-- 🔎 Scryfall Search Autocomplete -->
+    <script>
+      const searchInput = document.getElementById("card-search");
+      const resultsBox = document.getElementById("autocomplete-results");
 
-    <section class="features">
-      <div class="card">
-        <h3>Deck Builder</h3>
-        <p>Create, edit, and share your Commander decks with intuitive tools and Scryfall integration.</p>
-      </div>
-      <div class="card">
-        <h3>Play Online</h3>
-        <p>Join live multiplayer games, track turns, and manage your life total with our online table.</p>
-      </div>
-      <div class="card">
-        <h3>Commander Resources</h3>
-        <p>Access ban lists, strategy guides, and featured decks curated for Commander players.</p>
-      </div>
-    </section>
+      searchInput.addEventListener("input", async () => {
+        const query = searchInput.value.trim();
+        if (!query) {
+          resultsBox.innerHTML = "";
+          return;
+        }
 
-    <section class="top-decks">
-      <h2>Top Commander Decks</h2>
-      <div class="deck-grid">
-        <div class="deck-card">
-          <img src="https://cards.scryfall.io/normal/front/5/f/5f4b5d9f-f8f0-42bb-8e6c-f59eb716420f.jpg" alt="Atraxa, Praetors' Voice" />
-          <div class="info">
-            <h3>Atraxa Superfriends</h3>
-            <p>Control, proliferate, and dominate the board with Planeswalkers.</p>
-          </div>
-        </div>
-        <div class="deck-card">
-          <img src="https://cards.scryfall.io/normal/front/d/2/d24ff43e-fdc7-4dc8-a917-0b84921c8f41.jpg" alt="Edgar Markov" />
-          <div class="info">
-            <h3>Vampire Aggro</h3>
-            <p>Fast-paced tribal strategy using Edgar's vampire swarm.</p>
-          </div>
-        </div>
-        <div class="deck-card">
-          <img src="https://cards.scryfall.io/normal/front/4/8/487d9c6a-2b8b-4d96-a6f0-2a61c77ef7d2.jpg" alt="Tatyova, Benthic Druid" />
-          <div class="info">
-            <h3>Lands Matter</h3>
-            <p>Ramp hard, draw cards, and take over with value engines.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+        const res = await fetch(`https://api.scryfall.com/cards/autocomplete?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
 
-    <footer>
-      &copy; 2025 TappedMana. Not affiliated with Wizards of the Coast.
-    </footer>
-
-    <!-- Firebase auth handling -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-      import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
-        authDomain: "new-chat-8d4f4.firebaseapp.com",
-        projectId: "new-chat-8d4f4",
-        storageBucket: "new-chat-8d4f4.appspot.com",
-        messagingSenderId: "998012770880",
-        appId: "1:998012770880:web:0b9cf74d0a92836b65a6d4",
-        databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com"
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-
-      const nav = document.querySelector("nav");
-      if (nav) {
-        const links = nav.querySelectorAll("a");
-        const logoutLink = links[links.length - 1];
-
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            const welcome = document.createElement("span");
-            welcome.textContent = `Welcome, ${user.email}`;
-            welcome.style.color = "#e0f2fe";
-            welcome.style.marginRight = "1rem";
-            nav.insertBefore(welcome, nav.firstChild);
-
-            logoutLink.textContent = "Logout";
-            logoutLink.addEventListener("click", (e) => {
-              e.preventDefault();
-              signOut(auth).then(() => location.reload());
-            });
-          } else {
-            logoutLink.textContent = "Login";
-            logoutLink.setAttribute("href", "/login");
-          }
+        resultsBox.innerHTML = "";
+        data.data.slice(0, 10).forEach(name => {
+          const div = document.createElement("div");
+          div.textContent = name;
+          div.onclick = () => {
+            searchInput.value = name;
+            resultsBox.innerHTML = "";
+            // optional: trigger card preview here
+          };
+          resultsBox.appendChild(div);
         });
-      }
+      });
     </script>
   </body>
 </html>
