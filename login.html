@@ -1,0 +1,44 @@
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
+
+export default function LoginPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 to-purple-700 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md"
+      >
+        <Card className="rounded-2xl shadow-xl bg-white/90 backdrop-blur-sm">
+          <CardContent className="p-8">
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <Sparkles className="text-purple-700" />
+              <h1 className="text-2xl font-bold text-gray-800">Commander Login</h1>
+            </div>
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <Input type="email" placeholder="you@domain.com" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <Input type="password" placeholder="••••••••" required />
+              </div>
+              <Button type="submit" className="w-full mt-2">
+                Log In
+              </Button>
+            </form>
+            <p className="text-center text-sm text-gray-500 mt-4">
+              New to Commander? <a href="#" className="text-purple-700 hover:underline">Sign Up</a>
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+}
