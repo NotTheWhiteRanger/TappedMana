@@ -42,6 +42,18 @@
       .ms-r { color: #f87171; }
       .ms-g { color: #34d399; }
 
+      /* Search bar styling */
+      .searchbar {
+        flex: 1;
+        text-align: center;
+      }
+      .searchbar input[type="text"] {
+        width: 60%;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 0.5rem;
+      }
+
       nav a {
         margin-left: 1.5rem;
         text-decoration: none;
@@ -151,6 +163,11 @@
         <span class="ms ms-r"></span>
         <span class="ms ms-g"></span>
       </div>
+      
+      <form class="searchbar" action="/search" method="get">
+        <input type="text" name="q" placeholder="Search..." />
+      </form>
+      
       <nav>
         <a href="#">Home</a>
         <a href="#">Deck Builder</a>
