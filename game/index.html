@@ -99,18 +99,28 @@
       playerListDiv.innerHTML = "Room ID missing in URL.";
     } else {
       const playersRef = ref(db, "rooms/" + roomId + "/players");
+      const playerRef = ref(db, `rooms/${roomId}/players/${playerName}`);
+
+      // Add self to player list
+      update(playerRef, { joinedAt: Date.now(), ready: false });
+
+      // Listen to all players
       onValue(playersRef, (snapshot) => {
         const players = snapshot.val() || {};
-        const html = Object.entries(players).map(([name, data]) => {
-          const ready = data.ready ? "✅" : "";
+        const playerNames = Object.keys(players);
+        const html = playerNames.map(name => {
+          const ready = players[name].ready ? "✅" : "";
           return `<div>• ${name} ${ready}</div>`;
         }).join('');
         playerListDiv.innerHTML = html || "No players found.";
+
+        const allReady = playerNames.length > 1 && playerNames.every(name => players[name].ready);
+        if (allReady) {
+          window.location.href = `/gameboard/?room=${roomId}`;
+        }
       });
 
-      const playerRef = ref(db, `rooms/${roomId}/players/${playerName}`);
-      update(playerRef, { joinedAt: Date.now() });
-
+      // Mark self as ready
       readyBtn.addEventListener('click', () => {
         update(playerRef, { ready: true });
       });
