@@ -30,7 +30,7 @@
 
     .zone {
       background: white;
-      border: 2px solid #1e293b;
+      border: none;
       border-radius: 0.5rem;
       display: flex;
       justify-content: center;
@@ -72,14 +72,14 @@
     }
 
     .library {
-      grid-column: 3;
+      grid-column: 2;
       grid-row: 3;
       height: 125px;
       width: 88px;
     }
 
     .commander {
-      grid-column: 3;
+      grid-column: 3; margin-left: -40px;
       grid-row: 1;
       clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
       background: white;
@@ -92,6 +92,31 @@
       transform: translateX(-50%);
       display: flex;
       gap: 10px;
+    }
+
+    .life-counter {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffffffcc;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: bold;
+    }
+
+    .life-counter button {
+      font-size: 1rem;
+      padding: 0.3rem 0.6rem;
+      
+      background: #1e3a8a;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
     .card {
@@ -128,7 +153,14 @@
   </style>
 </head>
 <body>
+  
+
   <div class="board-wrapper">
+    <div class="zone life-counter" style="grid-column: 3; grid-row: 2; display:flex; flex-direction:row; justify-content:center; align-items:center; background: transparent; color: #1e293b; padding: 10px; font-weight: bold; font-family: 'Roboto', sans-serif; font-size: 1rem;   border: none;">
+      <button onclick="adjustLife(-1)">-</button>
+      <span id="lifeTotal">40</span>
+      <button onclick="adjustLife(1)">+</button>
+    </div>
     <div class="zone exile" ondragover="event.preventDefault()" ondrop="dropCard(event, 'exile')">Exile</div>
     <div class="zone graveyard" ondragover="event.preventDefault()" ondrop="dropCard(event, 'graveyard')">Graveyard</div>
     <div class="zone monster-zone" ondragover="event.preventDefault()" ondrop="dropCard(event, 'monster')">Monster Zone</div>
@@ -139,6 +171,7 @@
   <div class="hand-zone" id="handZone"></div>
 
   <script type="module">
+// removed dragLifeCounter and drop logic
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
@@ -234,6 +267,15 @@
       overlay.appendChild(img);
       document.body.appendChild(overlay);
     }
-  </script>
+
+    window.adjustLife = function(amount) {
+      const lifeDisplay = document.getElementById("lifeTotal");
+      let life = parseInt(lifeDisplay.textContent, 10);
+      life += amount;
+      lifeDisplay.textContent = life;
+    }
+  
+
+</script>
 </body>
 </html>
