@@ -40,6 +40,11 @@
       padding: 5px;
     }
 
+    .zone.drop-target {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px #3b82f6 inset;
+    }
+
     .monster-zone {
       grid-column: 2;
       grid-row: 2;
@@ -92,33 +97,97 @@
     .card {
       width: 60px;
       height: 90px;
-      background: #3b82f6;
       border-radius: 8px;
+      cursor: grab;
+    }
+
+    .zoom-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
       display: flex;
       justify-content: center;
       align-items: center;
-      color: white;
-      font-weight: bold;
+      z-index: 1000;
+    }
+
+    .zoom-overlay img {
+      max-height: 90vh;
+      max-width: 90vw;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
     }
   </style>
 </head>
 <body>
   <div class="board-wrapper">
-    <div class="zone exile">Exile</div>
-    <div class="zone graveyard">Graveyard</div>
-    <div class="zone monster-zone">Monster Zone</div>
-    <div class="zone mana-zone">Mana Zone</div>
+    <div class="zone exile" ondragover="event.preventDefault()" ondrop="dropCard(event)">Exile</div>
+    <div class="zone graveyard" ondragover="event.preventDefault()" ondrop="dropCard(event)">Graveyard</div>
+    <div class="zone monster-zone" ondragover="event.preventDefault()" ondrop="dropCard(event)">Monster Zone</div>
+    <div class="zone mana-zone" ondragover="event.preventDefault()" ondrop="dropCard(event)">Mana Zone</div>
     <div class="zone commander">Commander</div>
     <div class="zone library">Library</div>
   </div>
-  <div class="hand-zone">
-    <div class="card">MG</div>
-    <div class="card">MG</div>
-    <div class="card">MG</div>
-    <div class="card">MG</div>
-    <div class="card">MG</div>
-    <div class="card">MG</div>
-    <div class="card">MG</div>
-  </div>
+  <div class="hand-zone" id="handZone"></div>
+
+  <script>
+    const handZone = document.getElementById("handZone");
+
+    const exampleCards = [
+      "Black Lotus",
+      "Lightning Bolt",
+      "Swords to Plowshares",
+      "Counterspell",
+      "Sol Ring",
+      "Island",
+      "Mountain"
+    ];
+
+    exampleCards.forEach(cardName => {
+      fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`)
+        .then(res => res.json())
+        .then(data => {
+          const img = document.createElement("img");
+          img.src = data.image_uris.small;
+          img.className = "card";
+          img.draggable = true;
+          img.ondragstart = dragCard;
+          img.onclick = () => zoomCard(data.image_uris.normal);
+          handZone.appendChild(img);
+        })
+        .catch(err => console.error("Error loading card:", cardName, err));
+    });
+
+    function dragCard(event) {
+      event.dataTransfer.setData("text/plain", event.target.src);
+      setTimeout(() => event.target.remove(), 0);
+    }
+
+    function dropCard(event) {
+      event.preventDefault();
+      const src = event.dataTransfer.getData("text/plain");
+      if (!src) return;
+      const img = document.createElement("img");
+      img.src = src;
+      img.className = "card";
+      img.draggable = true;
+      img.ondragstart = dragCard;
+      img.onclick = () => zoomCard(src.replace("small", "normal"));
+      event.target.appendChild(img);
+    }
+
+    function zoomCard(src) {
+      const overlay = document.createElement("div");
+      overlay.className = "zoom-overlay";
+      overlay.onclick = () => overlay.remove();
+      const img = document.createElement("img");
+      img.src = src;
+      overlay.appendChild(img);
+      document.body.appendChild(overlay);
+    }
+  </script>
 </body>
 </html>
