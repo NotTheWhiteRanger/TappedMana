@@ -37,7 +37,6 @@
       }
       .ms-u { color: #60a5fa; }
       .ms-w { color: #facc15; }
-      .ms-c { color: #9ca3af; }
       .ms-b { color: #6b7280; }
       .ms-r { color: #f87171; }
       .ms-g { color: #34d399; }
@@ -45,13 +44,52 @@
       /* Search bar styling */
       .searchbar {
         flex: 1;
-        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
       }
-      .searchbar input[type="text"] {
-        width: 60%;
+      /* Container around input so dropdown only matches input's width */
+      .input-container {
+        position: relative;
+        width: 60%; /* Adjust as needed */
+        display: inline-block;
+      }
+      .input-container input[type="text"] {
+        width: 100%;
         padding: 0.5rem;
         border: none;
         border-radius: 0.5rem;
+      }
+      .searchbar button {
+        padding: 0.5rem 1rem;
+        margin-left: 0.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        background-color: #2563eb;
+        color: #fff;
+        cursor: pointer;
+      }
+      /* The dropdown is now only as wide as the .input-container */
+      .dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-top: none;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+      }
+      .dropdown-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+      }
+      .dropdown-item:hover {
+        background-color: #f3f4f6;
       }
 
       nav a {
@@ -158,14 +196,18 @@
         <h1>TappedMana</h1>
         <span class="ms ms-u"></span>
         <span class="ms ms-w"></span>
-        <span class="ms ms-c"></span>
         <span class="ms ms-b"></span>
         <span class="ms ms-r"></span>
         <span class="ms ms-g"></span>
       </div>
       
-      <form class="searchbar" action="/search" method="get">
-        <input type="text" name="q" placeholder="Search..." />
+      <form id="card-search-form" class="searchbar" action="#">
+        <!-- Input and dropdown in their own container -->
+        <div class="input-container">
+          <input id="card-search-input" type="text" name="q" placeholder="Search cards..." autocomplete="off" />
+          <div id="search-dropdown" class="dropdown"></div>
+        </div>
+        <button type="submit">Search</button>
       </form>
       
       <nav>
@@ -233,13 +275,13 @@
       import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
       const firebaseConfig = {
-        apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
-        authDomain: "new-chat-8d4f4.firebaseapp.com",
-        projectId: "new-chat-8d4f4",
-        storageBucket: "new-chat-8d4f4.appspot.com",
-        messagingSenderId: "998012770880",
-        appId: "1:998012770880:web:0b9cf74d0a92836b65a6d4",
-        databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com"
+        apiKey: "YOUR_FIREBASE_API_KEY",
+        authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+        projectId: "YOUR_FIREBASE_PROJECT_ID",
+        storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_FIREBASE_SENDER_ID",
+        appId: "YOUR_FIREBASE_APP_ID",
+        databaseURL: "YOUR_FIREBASE_DATABASE_URL"
       };
 
       const app = initializeApp(firebaseConfig);
@@ -269,6 +311,83 @@
           }
         });
       }
+    </script>
+
+    <!-- Scryfall Card Search Dropdown Integration -->
+    <script type="module">
+      const input = document.getElementById('card-search-input');
+      const dropdown = document.getElementById('search-dropdown');
+
+      input.addEventListener('input', () => {
+        const query = input.value.trim();
+        if (!query) {
+          dropdown.innerHTML = '';
+          return;
+        }
+
+        fetch('https://api.scryfall.com/cards/search?q=' + encodeURIComponent(query))
+          .then(response => response.json())
+          .then(data => {
+            dropdown.innerHTML = '';
+            if (data.data && data.data.length > 0) {
+              data.data.slice(0, 10).forEach(card => {
+                const item = document.createElement('div');
+                item.classList.add('dropdown-item');
+
+                let imageUrl = '';
+                if (card.image_uris && card.image_uris.small) {
+                  imageUrl = card.image_uris.small;
+                } else if (card.card_faces && card.card_faces[0].image_uris && card.card_faces[0].image_uris.small) {
+                  imageUrl = card.card_faces[0].image_uris.small;
+                }
+
+                let colorsHTML = '';
+                if (card.colors && card.colors.length > 0) {
+                  colorsHTML = card.colors.map(color => {
+                    let cls = '';
+                    switch(color) {
+                      case 'W': cls = 'ms ms-w'; break;
+                      case 'U': cls = 'ms ms-u'; break;
+                      case 'B': cls = 'ms ms-b'; break;
+                      case 'R': cls = 'ms ms-r'; break;
+                      case 'G': cls = 'ms ms-g'; break;
+                      default: cls = 'ms'; break;
+                    }
+                    return `<span class="${cls}">${color}</span>`;
+                  }).join(' ');
+                } else {
+                  colorsHTML = 'Colorless';
+                }
+
+                item.innerHTML = `
+                  <div style="display: flex; align-items: center;">
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${card.name}" style="width:40px; margin-right:0.5rem;">` : ''}
+                    <div>
+                      <strong>${card.name}</strong><br>
+                      <span>Mana Value: ${card.cmc}</span><br>
+                      <span>Colors: ${colorsHTML}</span>
+                    </div>
+                  </div>
+                `;
+                item.addEventListener('click', () => {
+                  input.value = card.name;
+                  dropdown.innerHTML = '';
+                });
+                dropdown.appendChild(item);
+              });
+            } else {
+              dropdown.innerHTML = '<div class="dropdown-item">No cards found.</div>';
+            }
+          })
+          .catch(err => console.error(err));
+      });
+
+      // Hide the dropdown if user clicks outside
+      document.addEventListener('click', (e) => {
+        if (!document.getElementById('card-search-form').contains(e.target)) {
+          dropdown.innerHTML = '';
+        }
+      });
     </script>
   </body>
 </html>
