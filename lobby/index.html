@@ -1,1 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Lobby</title>
+  <script type="module" src="lobby.js"></script>
+  <link rel="stylesheet" href="lobby.css">
+</head>
+<body>
+  <h1>Commander Game Lobby</h1>
+  <input id="roomName" placeholder="Room name or code" />
+  <button onclick="createRoom()">Create Room</button>
+  <button onclick="joinRoom()">Join Room</button>
+  <div id="playersList"></div>
+  <button id="startBtn" onclick="startGame()" style="display:none;">Start Game</button>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
+      authDomain: "new-chat-8d4f4.firebaseapp.com",
+      databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
+      projectId: "new-chat-8d4f4",
+      storageBucket: "new-chat-8d4f4.appspot.com",
+      messagingSenderId: "998012770880",
+      appId: "1:998012770880:web:0b9cf74d0a92836b65a6d4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.firebaseRefs = { ref, set, onValue };
+  </script>
+</body>
+</html>
 
