@@ -2,280 +2,176 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Commander Gameboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-start: #0f172a;
+      --bg-end: #1e293b;
+      --zone-bg: rgba(255, 255, 255, 0.05);
+      --zone-border: rgba(255, 255, 255, 0.15);
+      --padding: 10px;
+    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
-      background: #f0f9ff;
-      height: 100vh;
+      background: linear-gradient(to bottom, var(--bg-start), var(--bg-end));
+      color: white;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-
-    .board-wrapper {
+    .gameboard {
       display: grid;
       grid-template-columns: 100px 1fr 100px;
-      grid-template-rows: 120px 1fr 200px;
+      grid-template-rows: 120px auto 120px auto 120px;
       gap: 10px;
-      width: 90vw;
-      height: 90vh;
-      background: #e2e8f0;
-      padding: 10px;
+      width: 95vw;
+      height: 95vh;
+      padding: var(--padding);
+      background: var(--zone-bg);
       border-radius: 1rem;
-      position: relative;
     }
-
     .zone {
-      background: white;
-      border: none;
-      border-radius: 0.5rem;
+      background: var(--zone-bg);
+      border: 2px solid var(--zone-border);
+      border-radius: 0.75rem;
+      padding: var(--padding);
+      text-align: center;
+      position: relative;
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
+    }
+    .zone .count {
+      position: absolute;
+      bottom: 4px;
+      right: 6px;
+      font-size: 0.75rem;
+      color: #facc15;
+    }
+    .monster-zone, .mana-zone {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 2px dashed rgba(255,255,255,0.2);
+      font-weight: bold;
+    }
+    /* Grid placements */
+    .opponent-mana-zone { grid-column: 2; grid-row: 1; }
+    .opponent-monster-zone { grid-column: 2; grid-row: 2; }
+    .opponent-commander { 
+      grid-column: 1; 
+      grid-row: 3; 
+      clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+      background: rgba(255,255,255,0.08);
       display: flex;
       justify-content: center;
       align-items: center;
       font-weight: bold;
-      text-align: center;
-      padding: 5px;
     }
-
-    .zone.drop-target {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px #3b82f6 inset;
-    }
-
-    .monster-zone {
-      grid-column: 2;
-      grid-row: 2;
-      height: 240px;
-    }
-
-    .mana-zone {
-      grid-column: 2;
-      grid-row: 3;
-      height: 200px;
-    }
-
-    .graveyard {
-      grid-column: 1;
-      grid-row: 3;
-      height: 125px;
-      width: 88px;
-    }
-
-    .exile {
-      grid-column: 1;
-      grid-row: 2;
-      height: 125px;
-      width: 88px;
-    }
-
-    .library {
-      grid-column: 2;
-      grid-row: 3;
-      height: 125px;
-      width: 88px;
-    }
-
-    .commander {
-      grid-column: 3; margin-left: -40px;
-      grid-row: 1;
+    .opponent-life-counter { grid-column: 3; grid-row: 2; }
+    .opponent-graveyard { grid-column: 1; grid-row: 1; }
+    .opponent-exile { grid-column: 1; grid-row: 2; }
+    .opponent-library { grid-column: 3; grid-row: 1; }
+    .player-monster-zone { grid-column: 2; grid-row: 4; }
+    .player-mana-zone { grid-column: 2; grid-row: 5; }
+    .exile { grid-column: 1; grid-row: 4; }
+    .graveyard { grid-column: 1; grid-row: 5; }
+    .library { grid-column: 3; grid-row: 5; }
+    .commander { 
+      grid-column: 3; 
+      grid-row: 3; 
       clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-      background: white;
-    }
-
-    .hand-zone {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      background: rgba(255,255,255,0.08);
       display: flex;
-      gap: 10px;
-    }
-
-    .life-counter {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ffffffcc;
-      padding: 0.5rem 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
-      display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 0.5rem;
       font-weight: bold;
     }
-
-    .life-counter button {
-      font-size: 1rem;
-      padding: 0.3rem 0.6rem;
-      
-      background: #1e3a8a;
+    .life-counter { grid-column: 3; grid-row: 4; }
+    .life-counter, .opponent-life-counter {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.08);
+      padding: 6px 12px;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(255,255,255,0.1);
+    }
+    .life-counter button, .opponent-life-counter button {
+      background: #3b82f6;
       color: white;
-      border-radius: 5px;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-weight: bold;
+      border: none;
       cursor: pointer;
     }
-
     .card {
       width: 60px;
       height: 90px;
       border-radius: 8px;
       cursor: grab;
       transition: transform 0.2s;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
-
-    .card.tapped {
-      transform: rotate(90deg);
-    }
-
+    .card.tapped { transform: rotate(90deg); }
     .zoom-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0,0,0,0.85);
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 1000;
     }
-
     .zoom-overlay img {
       max-height: 90vh;
       max-width: 90vw;
       border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 0 30px rgba(0,0,0,0.9);
     }
   </style>
 </head>
 <body>
-  
-
-  <div class="board-wrapper">
-    <div class="zone life-counter" style="grid-column: 3; grid-row: 2; display:flex; flex-direction:row; justify-content:center; align-items:center; background: transparent; color: #1e293b; padding: 10px; font-weight: bold; font-family: 'Roboto', sans-serif; font-size: 1rem;   border: none;">
-      <button onclick="adjustLife(-1)">-</button>
-      <span id="lifeTotal">40</span>
-      <button onclick="adjustLife(1)">+</button>
+  <main class="gameboard">
+    <div class="zone opponent-mana-zone">Opponent Mana Zone</div>
+    <div class="zone opponent-monster-zone">Opponent Monster Zone</div>
+    <div class="zone opponent-commander">Opponent Commander</div>
+    <div class="zone opponent-life-counter">
+      <button data-action="decrease" data-target="opponentLifeTotal">-</button>
+      <span id="opponentLifeTotal">40</span>
+      <button data-action="increase" data-target="opponentLifeTotal">+</button>
     </div>
-    <div class="zone exile" ondragover="event.preventDefault()" ondrop="dropCard(event, 'exile')">Exile</div>
-    <div class="zone graveyard" ondragover="event.preventDefault()" ondrop="dropCard(event, 'graveyard')">Graveyard</div>
-    <div class="zone monster-zone" ondragover="event.preventDefault()" ondrop="dropCard(event, 'monster')">Monster Zone</div>
-    <div class="zone mana-zone" ondragover="event.preventDefault()" ondrop="dropCard(event, 'mana')">Mana Zone</div>
-    <div class="zone commander">Commander</div>
+    <div class="zone opponent-graveyard">Opponent Graveyard</div>
+    <div class="zone opponent-exile">Opponent Exile</div>
+    <div class="zone opponent-library">Opponent Library</div>
+    <div class="zone player-monster-zone">Monster Zone</div>
+    <div class="zone player-mana-zone">Mana Zone</div>
+    <div class="zone exile">Exile</div>
+    <div class="zone graveyard">Graveyard</div>
     <div class="zone library">Library</div>
-  </div>
-  <div class="hand-zone" id="handZone"></div>
-
-  <script type="module">
-// removed dragLifeCounter and drop logic
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
-      authDomain: "new-chat-8d4f4.firebaseapp.com",
-      databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
-      projectId: "new-chat-8d4f4",
-      storageBucket: "new-chat-8d4f4.appspot.com",
-      messagingSenderId: "998012770880",
-      appId: "1:998012770880:web:0b9cf74d0a92836b65a6d4"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomId = urlParams.get('room');
-    const playerName = urlParams.get('player');
-    const handZone = document.getElementById("handZone");
-
-    const exampleCards = [
-      "Black Lotus",
-      "Lightning Bolt",
-      "Swords to Plowshares",
-      "Counterspell",
-      "Sol Ring",
-      "Island",
-      "Mountain"
-    ];
-
-    function attachCardBehavior(img, normalSrc) {
-      let clickTimeout;
-      img.onclick = () => {
-        clearTimeout(clickTimeout);
-        clickTimeout = setTimeout(() => {
-          img.classList.toggle("tapped");
-        }, 250);
-      };
-      img.ondblclick = () => {
-        clearTimeout(clickTimeout);
-        zoomCard(normalSrc);
-      };
-    }
-
-    exampleCards.forEach(cardName => {
-      fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`)
-        .then(res => res.json())
-        .then(data => {
-          const img = document.createElement("img");
-          img.src = data.image_uris.small;
-          img.className = "card";
-          img.draggable = true;
-          img.ondragstart = dragCard;
-          attachCardBehavior(img, data.image_uris.normal);
-          handZone.appendChild(img);
-        })
-        .catch(err => console.error("Error loading card:", cardName, err));
+    <div class="zone commander">Commander</div>
+    <div class="zone life-counter">
+      <button data-action="decrease" data-target="lifeTotal">-</button>
+      <span id="lifeTotal">40</span>
+      <button data-action="increase" data-target="lifeTotal">+</button>
+    </div>
+  </main>
+  <script>
+    document.querySelectorAll('button[data-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const target = document.getElementById(button.dataset.target);
+        let count = parseInt(target.textContent);
+        target.textContent = button.dataset.action === 'increase' ? ++count : --count;
+      });
     });
-
-    function dragCard(event) {
-      event.dataTransfer.setData("text/plain", event.target.src);
-      setTimeout(() => event.target.remove(), 0);
-    }
-    window.dragCard = dragCard;
-
-    function dropCard(event, zoneName) {
-      event.preventDefault();
-      const src = event.dataTransfer.getData("text/plain");
-      if (!src) return;
-      const normalSrc = src.replace("small", "normal");
-      const img = document.createElement("img");
-      img.src = src;
-      img.className = "card";
-      img.draggable = true;
-      img.ondragstart = dragCard;
-      attachCardBehavior(img, normalSrc);
-      event.target.appendChild(img);
-
-      if (roomId && playerName) {
-        const zoneRef = ref(db, `rooms/${roomId}/players/${playerName}/zones/${zoneName}`);
-        push(zoneRef, { image: src, timestamp: Date.now() });
-      }
-    }
-    window.dropCard = dropCard;
-
-    function zoomCard(src) {
-      const overlay = document.createElement("div");
-      overlay.className = "zoom-overlay";
-      overlay.onclick = () => overlay.remove();
-      const img = document.createElement("img");
-      img.src = src;
-      overlay.appendChild(img);
-      document.body.appendChild(overlay);
-    }
-
-    window.adjustLife = function(amount) {
-      const lifeDisplay = document.getElementById("lifeTotal");
-      let life = parseInt(lifeDisplay.textContent, 10);
-      life += amount;
-      lifeDisplay.textContent = life;
-    }
-  
-
-</script>
+  </script>
 </body>
 </html>
