@@ -58,12 +58,11 @@
       border: 2px dashed rgba(255,255,255,0.2);
       font-weight: bold;
     }
-    /* Grid placements */
     .opponent-mana-zone { grid-column: 2; grid-row: 1; }
     .opponent-monster-zone { grid-column: 2; grid-row: 2; }
-    .opponent-commander { 
-      grid-column: 1; 
-      grid-row: 3; 
+    .opponent-commander {
+      grid-column: 1;
+      grid-row: 3;
       clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
       background: rgba(255,255,255,0.08);
       display: flex;
@@ -72,17 +71,17 @@
       font-weight: bold;
     }
     .opponent-life-counter { grid-column: 3; grid-row: 2; }
-    .opponent-graveyard { grid-column: 1; grid-row: 1; }
-    .opponent-exile { grid-column: 1; grid-row: 2; }
+    .opponent-exile { grid-column: 1; grid-row: 1; }
+    .opponent-graveyard { grid-column: 1; grid-row: 2; }
     .opponent-library { grid-column: 3; grid-row: 1; }
     .player-monster-zone { grid-column: 2; grid-row: 4; }
     .player-mana-zone { grid-column: 2; grid-row: 5; }
     .exile { grid-column: 1; grid-row: 4; }
     .graveyard { grid-column: 1; grid-row: 5; }
     .library { grid-column: 3; grid-row: 5; }
-    .commander { 
-      grid-column: 3; 
-      grid-row: 3; 
+    .commander {
+      grid-column: 3;
+      grid-row: 3;
       clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
       background: rgba(255,255,255,0.08);
       display: flex;
@@ -111,8 +110,8 @@
       cursor: pointer;
     }
     .card {
-      width: 60px;
-      height: 90px;
+      width: 80px;
+      height: 112px;
       border-radius: 8px;
       cursor: grab;
       transition: transform 0.2s;
@@ -137,6 +136,14 @@
       border-radius: 10px;
       box-shadow: 0 0 30px rgba(0,0,0,0.9);
     }
+    .hand {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
@@ -149,11 +156,11 @@
       <span id="opponentLifeTotal">40</span>
       <button data-action="increase" data-target="opponentLifeTotal">+</button>
     </div>
-    <div class="zone opponent-graveyard">Opponent Graveyard</div>
     <div class="zone opponent-exile">Opponent Exile</div>
+    <div class="zone opponent-graveyard">Opponent Graveyard</div>
     <div class="zone opponent-library">Opponent Library</div>
-    <div class="zone player-monster-zone">Monster Zone</div>
-    <div class="zone player-mana-zone">Mana Zone</div>
+    <div class="zone player-monster-zone drop-zone">Monster Zone</div>
+    <div class="zone player-mana-zone drop-zone">Mana Zone</div>
     <div class="zone exile">Exile</div>
     <div class="zone graveyard">Graveyard</div>
     <div class="zone library">Library</div>
@@ -164,12 +171,97 @@
       <button data-action="increase" data-target="lifeTotal">+</button>
     </div>
   </main>
+  <div class="hand" id="hand"></div>
   <script>
+    const hand = document.getElementById('hand');
+    const cards = [
+      "Black Lotus",
+      "Sol Ring",
+      "Lightning Bolt",
+      "Counterspell",
+      "Island",
+      "Mountain"
+    ];
+
+    function zoomCard(src) {
+      const overlay = document.createElement('div');
+      overlay.className = 'zoom-overlay';
+      overlay.onclick = () => overlay.remove();
+      const img = document.createElement('img');
+      img.src = src;
+      overlay.appendChild(img);
+      document.body.appendChild(overlay);
+    }
+
+    cards.forEach(cardName => {
+      fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`)
+        .then(res => res.json())
+        .then(data => {
+          const img = document.createElement('img');
+          img.src = data.image_uris.small;
+          img.dataset.zoom = data.image_uris.normal;
+          img.className = 'card';
+          img.draggable = true;
+          img.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('text/plain', img.src);
+            e.dataTransfer.setData('zoom-src', img.dataset.zoom);
+          });
+
+          let clickTimeout;
+          img.addEventListener('click', () => {
+            clearTimeout(clickTimeout);
+            clickTimeout = setTimeout(() => {
+              img.classList.toggle('tapped');
+            }, 200);
+          });
+
+          img.addEventListener('dblclick', () => {
+            clearTimeout(clickTimeout);
+            zoomCard(img.dataset.zoom);
+          });
+
+          hand.appendChild(img);
+        });
+    });
+
     document.querySelectorAll('button[data-action]').forEach(button => {
       button.addEventListener('click', () => {
         const target = document.getElementById(button.dataset.target);
         let count = parseInt(target.textContent);
         target.textContent = button.dataset.action === 'increase' ? ++count : --count;
+      });
+    });
+
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+      zone.addEventListener('dragover', e => e.preventDefault());
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        const src = e.dataTransfer.getData('text/plain');
+        const zoomSrc = e.dataTransfer.getData('zoom-src');
+        const img = document.createElement('img');
+        img.src = src;
+        img.dataset.zoom = zoomSrc;
+        img.className = 'card';
+        img.draggable = true;
+        img.addEventListener('dragstart', evt => {
+          evt.dataTransfer.setData('text/plain', img.src);
+          evt.dataTransfer.setData('zoom-src', img.dataset.zoom);
+        });
+
+        let clickTimeout;
+        img.addEventListener('click', () => {
+          clearTimeout(clickTimeout);
+          clickTimeout = setTimeout(() => {
+            img.classList.toggle('tapped');
+          }, 200);
+        });
+
+        img.addEventListener('dblclick', () => {
+          clearTimeout(clickTimeout);
+          zoomCard(zoomSrc);
+        });
+
+        zone.appendChild(img);
       });
     });
   </script>
