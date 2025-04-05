@@ -99,6 +99,11 @@
       height: 90px;
       border-radius: 8px;
       cursor: grab;
+      transition: transform 0.2s;
+    }
+
+    .card.tapped {
+      transform: rotate(90deg);
     }
 
     .zoom-overlay {
@@ -165,6 +170,20 @@
       "Mountain"
     ];
 
+    function attachCardBehavior(img, normalSrc) {
+      let clickTimeout;
+      img.onclick = () => {
+        clearTimeout(clickTimeout);
+        clickTimeout = setTimeout(() => {
+          img.classList.toggle("tapped");
+        }, 250);
+      };
+      img.ondblclick = () => {
+        clearTimeout(clickTimeout);
+        zoomCard(normalSrc);
+      };
+    }
+
     exampleCards.forEach(cardName => {
       fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`)
         .then(res => res.json())
@@ -174,7 +193,7 @@
           img.className = "card";
           img.draggable = true;
           img.ondragstart = dragCard;
-          img.onclick = () => zoomCard(data.image_uris.normal);
+          attachCardBehavior(img, data.image_uris.normal);
           handZone.appendChild(img);
         })
         .catch(err => console.error("Error loading card:", cardName, err));
@@ -190,12 +209,13 @@
       event.preventDefault();
       const src = event.dataTransfer.getData("text/plain");
       if (!src) return;
+      const normalSrc = src.replace("small", "normal");
       const img = document.createElement("img");
       img.src = src;
       img.className = "card";
       img.draggable = true;
       img.ondragstart = dragCard;
-      img.onclick = () => zoomCard(src.replace("small", "normal"));
+      attachCardBehavior(img, normalSrc);
       event.target.appendChild(img);
 
       if (roomId && playerName) {
