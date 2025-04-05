@@ -124,16 +124,35 @@
 </head>
 <body>
   <div class="board-wrapper">
-    <div class="zone exile" ondragover="event.preventDefault()" ondrop="dropCard(event)">Exile</div>
-    <div class="zone graveyard" ondragover="event.preventDefault()" ondrop="dropCard(event)">Graveyard</div>
-    <div class="zone monster-zone" ondragover="event.preventDefault()" ondrop="dropCard(event)">Monster Zone</div>
-    <div class="zone mana-zone" ondragover="event.preventDefault()" ondrop="dropCard(event)">Mana Zone</div>
+    <div class="zone exile" ondragover="event.preventDefault()" ondrop="dropCard(event, 'exile')">Exile</div>
+    <div class="zone graveyard" ondragover="event.preventDefault()" ondrop="dropCard(event, 'graveyard')">Graveyard</div>
+    <div class="zone monster-zone" ondragover="event.preventDefault()" ondrop="dropCard(event, 'monster')">Monster Zone</div>
+    <div class="zone mana-zone" ondragover="event.preventDefault()" ondrop="dropCard(event, 'mana')">Mana Zone</div>
     <div class="zone commander">Commander</div>
     <div class="zone library">Library</div>
   </div>
   <div class="hand-zone" id="handZone"></div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
+      authDomain: "new-chat-8d4f4.firebaseapp.com",
+      databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
+      projectId: "new-chat-8d4f4",
+      storageBucket: "new-chat-8d4f4.appspot.com",
+      messagingSenderId: "998012770880",
+      appId: "1:998012770880:web:0b9cf74d0a92836b65a6d4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    const playerName = urlParams.get('player');
     const handZone = document.getElementById("handZone");
 
     const exampleCards = [
@@ -165,8 +184,9 @@
       event.dataTransfer.setData("text/plain", event.target.src);
       setTimeout(() => event.target.remove(), 0);
     }
+    window.dragCard = dragCard;
 
-    function dropCard(event) {
+    function dropCard(event, zoneName) {
       event.preventDefault();
       const src = event.dataTransfer.getData("text/plain");
       if (!src) return;
@@ -177,7 +197,13 @@
       img.ondragstart = dragCard;
       img.onclick = () => zoomCard(src.replace("small", "normal"));
       event.target.appendChild(img);
+
+      if (roomId && playerName) {
+        const zoneRef = ref(db, `rooms/${roomId}/players/${playerName}/zones/${zoneName}`);
+        push(zoneRef, { image: src, timestamp: Date.now() });
+      }
     }
+    window.dropCard = dropCard;
 
     function zoomCard(src) {
       const overlay = document.createElement("div");
