@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Commander Gameboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: #f0f9ff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .board-wrapper {
+      display: grid;
+      grid-template-columns: 100px 1fr 100px;
+      grid-template-rows: 100px 1fr auto;
+      gap: 10px;
+      width: 90vw;
+      height: 90vh;
+      background: #e2e8f0;
+      padding: 10px;
+      border-radius: 1rem;
+    }
+
+    .zone {
+      background: white;
+      border: 2px solid #1e293b;
+      border-radius: 0.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      text-align: center;
+      padding: 5px;
+    }
+
+    .monster-zone {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .mana-zone {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    .graveyard {
+      grid-column: 1;
+      grid-row: 3;
+    }
+
+    .exile {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .library {
+      grid-column: 3;
+      grid-row: 3;
+    }
+
+    .commander {
+      grid-column: 3;
+      grid-row: 1;
+      clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+      background: white;
+    }
+
+    .hand-zone {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+
+    .card {
+      width: 60px;
+      height: 90px;
+      background: #3b82f6;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="board-wrapper">
+    <div class="zone exile">Exile</div>
+    <div class="zone graveyard">Graveyard</div>
+    <div class="zone monster-zone">Monster Zone</div>
+    <div class="zone mana-zone">Mana Zone</div>
+    <div class="zone commander">Commander</div>
+    <div class="zone library">Library</div>
+  </div>
+  <div class="hand-zone">
+    <div class="card">MG</div>
+    <div class="card">MG</div>
+    <div class="card">MG</div>
+    <div class="card">MG</div>
+    <div class="card">MG</div>
+    <div class="card">MG</div>
+    <div class="card">MG</div>
+  </div>
+</body>
+</html>
