@@ -43,6 +43,21 @@
       font-style: italic;
       color: #64748b;
     }
+
+    #readyBtn {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    #readyBtn:hover {
+      background-color: #059669;
+    }
   </style>
 </head>
 <body>
@@ -51,13 +66,14 @@
     <h1>Game Starting...</h1>
     <p>Waiting for all players to load in</p>
     <div id="playerList">Loading players...</div>
+    <button id="readyBtn">I'm Ready</button>
     <div class="loading">Initializing game data...</div>
   </div>
 
   <!-- Firebase setup and logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
@@ -72,10 +88,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Get room from URL (e.g. /game/?room=room-123)
     const urlParams = new URLSearchParams(window.location.search);
     const roomId = urlParams.get('room');
     const playerListDiv = document.getElementById('playerList');
+    const readyBtn = document.getElementById('readyBtn');
+
+    const playerName = "Player" + Math.floor(Math.random() * 1000);
 
     if (!roomId) {
       playerListDiv.innerHTML = "Room ID missing in URL.";
@@ -83,8 +101,18 @@
       const playersRef = ref(db, "rooms/" + roomId + "/players");
       onValue(playersRef, (snapshot) => {
         const players = snapshot.val() || {};
-        const html = Object.keys(players).map(p => `<div>• ${p}</div>`).join('');
+        const html = Object.entries(players).map(([name, data]) => {
+          const ready = data.ready ? "✅" : "";
+          return `<div>• ${name} ${ready}</div>`;
+        }).join('');
         playerListDiv.innerHTML = html || "No players found.";
+      });
+
+      const playerRef = ref(db, `rooms/${roomId}/players/${playerName}`);
+      update(playerRef, { joinedAt: Date.now() });
+
+      readyBtn.addEventListener('click', () => {
+        update(playerRef, { ready: true });
       });
     }
   </script>
