@@ -63,11 +63,17 @@
         color: #fff;
         cursor: pointer;
       }
+
+      /*
+       Make the dropdown match the input width:
+       left: 20% (so it starts where the input starts),
+       width: 60% (same as the input).
+      */
       .dropdown {
         position: absolute;
         top: 100%;
-        left: 0;
-        width: 100%;
+        left: 15%;
+        width: 62%;
         background: #fff;
         border: 1px solid #ccc;
         border-top: none;
@@ -217,7 +223,6 @@
         <h3>Deck Builder</h3>
         <p>Create, edit, and share your Commander decks with intuitive tools and Scryfall integration.</p>
       </div>
-      <!-- Added an onclick to redirect to tappedmana.com/lobby -->
       <div class="card" style="cursor: pointer;" onclick="window.location.href='https://tappedmana.com/lobby';">
         <h3>Play Online</h3>
         <p>Join live multiplayer games, track turns, and manage your life total with our online table.</p>
