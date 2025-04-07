@@ -5,74 +5,98 @@ body {
   font-family: 'Segoe UI', sans-serif;
   color: #eee;
   overflow: hidden;
-}
-
-#gameboard {
-  width: 100vw;
   height: 100vh;
-  display: grid;
-  grid-template-rows: 25% 50% 25%;
-  grid-template-columns: 25% 50% 25%;
-  gap: 10px;
-  padding: 10px;
-  box-sizing: border-box;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
 }
 
-#player1 { grid-row: 3; grid-column: 2; }
-#player2 { grid-row: 1; grid-column: 2; }
-#player3 { grid-row: 2; grid-column: 1; }
-#player4 { grid-row: 2; grid-column: 3; }
+/* Main field layout */
+#gameboard {
+  flex: 1;
+  display: grid;
+  grid-template-areas:
+    "player2 player2 player2"
+    "player3 center player4"
+    "player1 player1 player1";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 25% 50% 25%;
+  height: 100%;
+  width: 100%;
+  gap: 6px;
+  box-sizing: border-box;
+  padding: 6px;
+}
+
+#player1 { grid-area: player1; }
+#player2 { grid-area: player2; }
+#player3 { grid-area: player3; }
+#player4 { grid-area: player4; }
+.center  { grid-area: center; }
 
 .player {
   background: #161616;
   border: 2px solid #2e2e2e;
-  border-radius: 12px;
-  box-shadow: 0 0 12px #000000aa;
-  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #000000aa;
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: auto;
+  justify-content: center;
+  padding: 6px;
 }
 
 .player h3 {
-  margin: 6px 0 10px 0;
-  font-size: 18px;
+  margin: 4px 0 6px 0;
+  font-size: 14px;
   font-weight: bold;
   color: #f0f0f0;
 }
+
+/* Rotate each battlefield */
+#player1 .player-zones { transform: rotate(0deg); }
+#player2 .player-zones { transform: rotate(180deg); }
+#player3 .player-zones { transform: rotate(90deg); transform-origin: center; }
+#player4 .player-zones { transform: rotate(-90deg); transform-origin: center; }
+
+/* Label rotation fix */
+#player1 .zone::before { transform: rotate(0deg); }
+#player2 .zone::before { transform: rotate(180deg); }
+#player3 .zone::before { transform: rotate(270deg); }
+#player4 .zone::before { transform: rotate(90deg); }
 
 .player-zones {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
+  height: 100%;
 }
 
+/* Battlefield zones */
 .zone {
   background: #252525;
-  border-radius: 6px;
-  padding: 6px;
-  min-width: 100px;
-  min-height: 70px;
+  border-radius: 4px;
+  padding: 4px;
+  min-width: 60px;
+  min-height: 50px;
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
   justify-content: flex-start;
   align-content: flex-start;
   position: relative;
-  box-shadow: inset 0 0 6px #00000088;
+  box-shadow: inset 0 0 4px #00000088;
+  font-size: 11px;
 }
 
 .zone::before {
   content: attr(id);
   position: absolute;
-  top: -14px;
+  top: -12px;
   left: 0;
-  font-size: 11px;
+  font-size: 9px;
   color: #888;
   text-transform: uppercase;
   background: #0a0a0a;
@@ -81,75 +105,54 @@ body {
 }
 
 .commander-zone {
-  width: 100%;
+  width: 90%;
   text-align: center;
   font-weight: bold;
   background: #292929;
 }
 
 .monster-zone {
-  width: 100%;
-  min-height: 100px;
+  width: 90%;
+  min-height: 70px;
   background: #1e1e1e;
 }
 
 .row {
   display: flex;
-  width: 100%;
   justify-content: space-between;
-  gap: 8px;
+  gap: 4px;
+  width: 90%;
 }
 
 .side-column {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 0 0 100px;
+  gap: 4px;
+  flex: 0 0 60px;
 }
 
 .mana-library {
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  gap: 4px;
   flex: 1;
 }
 
 .hand {
-  width: 100%;
-  min-height: 80px;
+  width: 90%;
+  min-height: 50px;
   background: #151515;
 }
 
-/* ROTATION */
-#player2 .player-zones {
-  transform: rotate(180deg);
-}
-#player3 .player-zones {
-  transform: rotate(90deg);
-  transform-origin: center;
-}
-#player4 .player-zones {
-  transform: rotate(-90deg);
-  transform-origin: center;
-}
-#player1 .player-zones {
-  transform: rotate(0deg);
-}
-
-#player1 .zone::before { transform: rotate(0deg); }
-#player2 .zone::before { transform: rotate(180deg); }
-#player3 .zone::before { transform: rotate(270deg); }
-#player4 .zone::before { transform: rotate(90deg); }
-
-/* CARD STYLE */
+/* Cards */
 .card {
-  width: 80px;
-  height: 112px;
+  width: 50px;
+  height: 70px;
   background-size: cover;
   cursor: grab;
   transition: transform 0.2s ease;
   border-radius: 4px;
-  box-shadow: 0 0 5px #000;
+  box-shadow: 0 0 4px #000;
 }
 
 .card:hover {
