@@ -1,7 +1,8 @@
+/* Base layout */
 body {
   margin: 0;
   padding: 0;
-  background: #0d0d0d;
+  background: #0a0a0a;
   font-family: 'Segoe UI', sans-serif;
   color: #eee;
   overflow: hidden;
@@ -18,19 +19,20 @@ body {
   box-sizing: border-box;
 }
 
-/* PLAYER POSITIONING */
-#player1 { grid-row: 3; grid-column: 2; } /* Bottom */
-#player2 { grid-row: 1; grid-column: 2; } /* Top */
-#player3 { grid-row: 2; grid-column: 1; } /* Left */
-#player4 { grid-row: 2; grid-column: 3; } /* Right */
-.center  { grid-row: 2; grid-column: 2; } /* Middle */
+/* Positioning players */
+#player1 { grid-row: 3; grid-column: 2; }
+#player2 { grid-row: 1; grid-column: 2; }
+#player3 { grid-row: 2; grid-column: 1; }
+#player4 { grid-row: 2; grid-column: 3; }
+.center  { grid-row: 2; grid-column: 2; }
 
+/* Player base style */
 .player {
-  background: #1a1a1a;
-  border: 1px solid #444;
-  border-radius: 8px;
-  box-shadow: 0 0 8px #000;
-  padding: 8px;
+  background: #161616;
+  border: 2px solid #2e2e2e;
+  border-radius: 12px;
+  box-shadow: 0 0 12px #000000aa;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,45 +42,60 @@ body {
 }
 
 .player h3 {
-  margin: 4px 0;
-  font-size: 16px;
+  margin: 6px 0 10px 0;
+  font-size: 18px;
   font-weight: bold;
-  text-align: center;
+  color: #f0f0f0;
 }
 
+/* Core zone layout */
 .player-zones {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
 }
 
-/* Zones */
 .zone {
-  background: #222;
-  border: 1px dashed #666;
-  border-radius: 4px;
-  padding: 5px;
+  background: #252525;
+  border-radius: 6px;
+  padding: 6px;
   min-width: 100px;
   min-height: 70px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 5px;
   justify-content: flex-start;
   align-content: flex-start;
-  box-sizing: border-box;
+  position: relative;
+  box-shadow: inset 0 0 6px #00000088;
+}
+
+.zone::before {
+  content: attr(id);
+  position: absolute;
+  top: -14px;
+  left: 0;
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  background: #0a0a0a;
+  padding: 0 4px;
+  border-radius: 3px;
 }
 
 .commander-zone {
   width: 100%;
   text-align: center;
   font-weight: bold;
+  background: #292929;
 }
 
 .monster-zone {
   width: 100%;
   min-height: 100px;
+  background: #1e1e1e;
 }
 
 .row {
@@ -105,36 +122,37 @@ body {
 .hand {
   width: 100%;
   min-height: 80px;
-  background: #1c1c1c;
+  background: #151515;
 }
 
-/* Center area: shared zones and search */
+/* Shared center zones */
 .center {
-  background: #2b2b2b;
-  border-radius: 8px;
-  padding: 10px;
-  box-shadow: 0 0 10px #000000aa;
+  background: #222;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 0 14px #000000aa;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  min-width: 200px;
+  gap: 12px;
+  min-width: 240px;
   max-height: 100%;
   overflow: auto;
 }
 
 .shared-zone {
-  background: #333;
-  border: 1px solid #777;
+  background: #2a2a2a;
+  border: 1px solid #666;
   border-radius: 6px;
-  padding: 8px;
+  padding: 10px;
   text-align: center;
   font-weight: bold;
   width: 100%;
   min-height: 80px;
+  box-shadow: inset 0 0 6px #00000066;
 }
 
-/* Card Search */
+/* Card search */
 .card-search {
   display: flex;
   gap: 5px;
@@ -174,6 +192,7 @@ button {
   cursor: grab;
   transition: transform 0.2s ease;
   border-radius: 4px;
+  box-shadow: 0 0 5px #000;
 }
 
 .card:hover {
