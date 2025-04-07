@@ -1,7 +1,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(to bottom, #f2f6ff, #e6efff);
+  background: linear-gradient(to bottom, #f4f7fb, #eaf0f9);
   font-family: 'Segoe UI', sans-serif;
   color: #1f2937;
   overflow: hidden;
@@ -14,23 +14,22 @@ body {
   width: 100vw;
 }
 
-/* Half-Screen Player Containers */
 .player-container {
-  flex: 1;
-  width: 100%;
-  background: #ffffff;
+  height: 50vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
-  padding: 16px;
-  gap: 12px;
+  justify-content: space-between;
+  padding: 16px 28px;
   box-sizing: border-box;
-  box-shadow: inset 0 -1px 0 #dbeafe;
   overflow: hidden;
-  position: relative;
+  background: #ffffff;
+  border-top: 1px solid #e0e7ef;
 }
 
 .top {
   transform: rotate(180deg);
+  border-bottom: 1px solid #e0e7ef;
 }
 
 .top * {
@@ -43,30 +42,32 @@ body {
   font-size: 18px;
   font-weight: 600;
   color: #1e3a8a;
+  padding: 6px 0;
 }
 
-/* Phase Tracker */
+/* Phase Bar */
 .phase-bar {
   display: flex;
   justify-content: center;
   gap: 6px;
-  flex-wrap: wrap;
-  background: #e0e7ff;
-  padding: 6px;
+  background: #e5ecfb;
+  padding: 6px 10px;
   border-radius: 8px;
   font-size: 12px;
+  margin: 8px 0;
 }
 
 .phase-bar span {
-  background: #c7d2fe;
+  background: #dbeafe;
   padding: 4px 8px;
   border-radius: 6px;
-  color: #1e40af;
+  color: #1e3a8a;
   font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .phase-bar .active {
-  background: #2563eb;
+  background: #3b82f6;
   color: white;
 }
 
@@ -74,7 +75,8 @@ body {
 .top-row, .middle-row {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .zone {
@@ -85,66 +87,77 @@ body {
   text-align: center;
   font-size: 12px;
   flex: 1;
-  min-height: 70px;
+  min-height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-  font-weight: 500;
   color: #374151;
+  font-weight: 500;
+  transition: background 0.2s ease;
 }
 
 .zone.large {
-  min-height: 90px;
   flex: 2;
+  min-height: 80px;
 }
 
-/* Hand */
+.zone:hover {
+  background: #f0f4fa;
+  cursor: pointer;
+}
+
+/* Hand Styling */
 .hand {
   background: #f1f5f9;
-  min-height: 130px;
-  height: 130px;
-  width: 100%;
+  min-height: 110px;
   display: flex;
-  gap: 10px;
-  padding: 10px;
   overflow-x: auto;
-  overflow-y: hidden;
-  border-radius: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  gap: 10px;
+  border: 1px solid #d1d5db;
 }
 
 .card {
   width: 80px;
   height: 112px;
   background-size: cover;
+  background-position: center;
   border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  cursor: grab;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
 .card:hover {
-  transform: scale(1.15) translateY(5px);
+  transform: scale(1.12) translateY(-4px);
   z-index: 10;
 }
 
+/* Life Counter */
 .life {
-  width: 80px;
-  height: 80px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: #2563eb;
-  color: white;
-  font-size: 20px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 18px;
   font-weight: bold;
-  cursor: pointer;
-  user-select: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  box-shadow: inset 0 0 4px #1e3a8a;
+  transition: background 0.2s;
 }
 
+.life:hover {
+  background: #2563eb;
+}
+
+/* End Turn */
 .end-turn {
-  margin: 0 auto;
+  margin: 8px auto;
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
@@ -153,9 +166,10 @@ body {
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  transition: background 0.2s;
 }
 
-.player-container.active {
-  border: 2px solid #3b82f6;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+.end-turn:hover {
+  background: #1e40af;
 }
