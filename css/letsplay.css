@@ -97,6 +97,8 @@ body {
 .hand {
   background: #151515;
   min-height: 60px;
+  height: 60px;
+  width: 100%;
 }
 
 .life {
@@ -114,20 +116,4 @@ body {
 
 .life:hover {
   background: #aa1e1e;
-}
-
-/* Mobile scaling */
-@media (max-width: 768px) {
-  .player-container {
-    transform: none !important;
-    position: static;
-    margin: 12px auto;
-  }
-
-  #gameboard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
-  }
 }
