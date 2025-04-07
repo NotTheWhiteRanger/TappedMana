@@ -25,7 +25,7 @@ body {
   justify-content: center;
 }
 
-/* Middle players */
+/* Middle row: Player 3 + 4 */
 .middle-row {
   flex: 1;
   display: flex;
@@ -54,7 +54,7 @@ body {
   justify-content: center;
 }
 
-/* Player container */
+/* Player frame */
 .player {
   background: #161616;
   border: 2px solid #2e2e2e;
@@ -62,7 +62,7 @@ body {
   box-shadow: 0 0 10px #00000088;
   padding: 6px;
   width: 100%;
-  max-width: 360px;
+  max-width: 320px;
   height: 100%;
   box-sizing: border-box;
   display: flex;
@@ -97,12 +97,10 @@ body {
   background: #252525;
   border-radius: 6px;
   padding: 5px;
-  width: 100%;
-  min-height: 50px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  justify-content: flex-start;
+  justify-content: center;
   align-content: flex-start;
   position: relative;
   font-size: 11px;
@@ -121,22 +119,34 @@ body {
   border-radius: 4px;
 }
 
+/* Updated zone sizes */
 .commander-zone {
+  width: 80px;
+  height: 112px;
   background: #292929;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .monster-zone {
-  min-height: 70px;
+  width: 90%;
+  height: 90px;
   background: #1e1e1e;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 }
 
 .hand {
+  width: 90%;
+  height: 60px;
   background: #151515;
-  min-height: 50px;
 }
 
-/* Mana row */
+/* Mana zone + sides */
 .row {
   display: flex;
   width: 100%;
@@ -158,10 +168,10 @@ body {
   flex: 1;
 }
 
-/* Cards */
+/* Card styling */
 .card {
-  width: 50px;
-  height: 70px;
+  width: 80px;
+  height: 112px;
   background-size: cover;
   border-radius: 4px;
   box-shadow: 0 0 4px #000;
