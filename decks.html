@@ -124,6 +124,13 @@
         justify-content: space-between;
         transition: transform 0.2s, box-shadow 0.2s;
         position: relative;
+        cursor: pointer;
+      }
+      .deck-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
       }
       .deck-card:hover {
         transform: translateY(-4px);
@@ -217,17 +224,23 @@
         {
           title: "Atraxa Superfriends",
           description: "Control, proliferate, and dominate the board with Planeswalkers.",
-          commander: "Atraxa, Praetors' Voice"
+          commander: "Atraxa, Praetors' Voice",
+          img: "https://cards.scryfall.io/normal/front/5/f/5f4b5d9f-f8f0-42bb-8e6c-f59eb716420f.jpg",
+          type: "control"
         },
         {
           title: "Vampire Aggro",
           description: "Fast-paced tribal strategy using Edgar’s vampire swarm.",
-          commander: "Edgar Markov"
+          commander: "Edgar Markov",
+          img: "https://cards.scryfall.io/normal/front/d/2/d24ff43e-fdc7-4dc8-a917-0b84921c8f41.jpg",
+          type: "aggro"
         },
         {
           title: "Lands Matter",
           description: "Ramp hard, draw cards, and take over with value engines.",
-          commander: "Tatyova, Benthic Druid"
+          commander: "Tatyova, Benthic Druid",
+          img: "https://cards.scryfall.io/normal/front/4/8/487d9c6a-2b8b-4d96-a6f0-2a61c77ef7d2.jpg",
+          type: "ramp"
         }
       ];
 
@@ -237,6 +250,7 @@
         const isNew = index === 0;
         card.innerHTML = `
           ${isNew ? '<div class="badge">NEW</div>' : ''}
+          <img src="${deck.img}" alt="${deck.commander}" />
           <h2>${deck.title}</h2>
           <p><strong>Commander:</strong> ${deck.commander}</p>
           <p>${deck.description}</p>
@@ -247,6 +261,7 @@
 
       function loadDecks() {
         const container = document.getElementById("deckList");
+        container.innerHTML = "";
         sampleDecks.forEach((deck, i) => container.appendChild(createDeckCard(deck, i)));
       }
 
