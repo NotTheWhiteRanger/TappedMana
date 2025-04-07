@@ -1,4 +1,4 @@
-// === LIFE COUNTER ===
+// === LIFE TRACKER ===
 document.querySelectorAll('.life').forEach(el => {
   const update = (delta) => {
     let current = parseInt(el.textContent, 10);
@@ -15,7 +15,7 @@ document.querySelectorAll('.life').forEach(el => {
   });
 });
 
-// === PHASE & TURNS ===
+// === PHASES & TURN CYCLE ===
 const phases = ["Untap", "Upkeep", "Draw", "Main 1", "Combat", "Main 2", "End"];
 const players = [1, 2];
 let currentPlayerIndex = 0;
@@ -62,17 +62,16 @@ function nextPhase() {
   highlightPhase();
 }
 
-// Initialize
 buildPhaseBars();
 highlightActivePlayer();
 highlightPhase();
 setInterval(nextPhase, 4000);
 
-document.querySelectorAll('.end-turn').forEach(button => {
-  button.addEventListener('click', () => nextTurn());
+document.querySelectorAll('.end-turn').forEach(btn => {
+  btn.addEventListener('click', () => nextTurn());
 });
 
-// === DRAW CARDS FROM SCRYFALL ===
+// === DRAW FROM SCRYFALL ===
 document.querySelectorAll('[id^="library"]').forEach(lib => {
   lib.addEventListener('click', async () => {
     const playerNum = lib.id.replace('library', '');
@@ -96,20 +95,22 @@ async function drawToHand(playerNum, count = 1) {
       img.addEventListener('dragstart', dragStart);
       img.addEventListener('click', tapCard);
       img.addEventListener('contextmenu', openCardMenu);
+      img.addEventListener('dblclick', zoomCard);
       hand.appendChild(img);
     } catch (err) {
-      console.error("Draw failed:", err);
+      console.error("Failed to draw:", err);
     }
   }
 }
 
-// Start hands
 players.forEach(p => drawToHand(p, 7));
 
-// === DRAG & DROP SYSTEM ===
+// === DRAG & DROP LOGIC ===
 function dragStart(e) {
   e.dataTransfer.setData('text/plain', e.target.src);
-  e.dataTransfer.setData('source-zone', e.target.parentElement.id);
+  e.dataTransfer.setData('origin-id', e.target.parentElement.id);
+  e.dataTransfer.setData('card-id', e.target.dataset.cid || '');
+  setTimeout(() => e.target.style.display = "none", 1); // temporary hide
 }
 
 document.querySelectorAll('.zone, .hand').forEach(zone => {
@@ -117,6 +118,22 @@ document.querySelectorAll('.zone, .hand').forEach(zone => {
   zone.addEventListener('drop', e => {
     e.preventDefault();
     const url = e.dataTransfer.getData('text/plain');
+    const origin = e.dataTransfer.getData('origin-id');
+    const target = e.currentTarget.id;
+
+    if (origin === target) {
+      const existing = Array.from(e.currentTarget.querySelectorAll('img'))
+        .find(img => img.src === url);
+      if (existing) {
+        existing.style.display = 'inline';
+        return;
+      }
+    }
+
+    const existing = Array.from(e.currentTarget.querySelectorAll('img'))
+      .find(img => img.src === url);
+    if (existing) return; // prevent duplicates
+
     const card = document.createElement('img');
     card.src = url;
     card.className = 'card';
@@ -124,23 +141,31 @@ document.querySelectorAll('.zone, .hand').forEach(zone => {
     card.addEventListener('dragstart', dragStart);
     card.addEventListener('click', tapCard);
     card.addEventListener('contextmenu', openCardMenu);
+    card.addEventListener('dblclick', zoomCard);
     e.currentTarget.appendChild(card);
+
+    // Remove from original zone
+    const originEl = document.getElementById(origin);
+    const original = Array.from(originEl.querySelectorAll('img')).find(img => img.src === url);
+    if (original) original.remove();
   });
 });
 
-// === TAP CARD (rotate 90°) ===
+// === TAP (only in play zones) ===
 function tapCard(e) {
-  e.preventDefault();
   const card = e.currentTarget;
+  const zoneId = card.parentElement.id.toLowerCase();
+  if (zoneId.includes('graveyard') || zoneId.includes('exile')) return;
+
   const tapped = card.classList.toggle('tapped');
   card.style.transform = tapped ? 'rotate(90deg)' : 'rotate(0deg)';
 }
 
-// === RIGHT-CLICK CARD ACTION MENU (basic) ===
+// === RIGHT-CLICK TO MOVE CARD ===
 function openCardMenu(e) {
   e.preventDefault();
   const card = e.currentTarget;
-  const action = prompt("Move card to: battlefield / graveyard / exile / hand / cancel", "cancel");
+  const action = prompt("Move to: battlefield / graveyard / exile / hand / cancel", "cancel");
   const zones = document.querySelectorAll('.zone, .hand');
 
   if (!action || action === 'cancel') return;
@@ -148,12 +173,26 @@ function openCardMenu(e) {
   for (const zone of zones) {
     if (zone.id.toLowerCase().includes(action.toLowerCase())) {
       const clone = card.cloneNode(true);
+      clone.draggable = true;
       clone.addEventListener('dragstart', dragStart);
       clone.addEventListener('click', tapCard);
       clone.addEventListener('contextmenu', openCardMenu);
+      clone.addEventListener('dblclick', zoomCard);
       zone.appendChild(clone);
       card.remove();
       break;
     }
   }
 }
+
+// === ZOOM ON DOUBLE CLICK ===
+function zoomCard(e) {
+  const modal = document.getElementById('zoomModal');
+  const img = document.getElementById('zoomImg');
+  img.src = e.currentTarget.src;
+  modal.style.display = 'flex';
+}
+
+document.getElementById('zoomModal').addEventListener('click', () => {
+  document.getElementById('zoomModal').style.display = 'none';
+});
