@@ -210,66 +210,82 @@
         <button id="createDeck">+ Create New Deck</button>
       </section>
 
-      <section id="deckList" class="deck-grid">
-        <!-- JS adds deck cards here -->
-      </section>
+      <section id="deckList" class="deck-grid"></section>
     </main>
 
     <footer class="footer">
       &copy; 2025 TappedMana. Built by players, for players.
     </footer>
 
-    <script>
-      const sampleDecks = [
-        {
-          title: "Atraxa Superfriends",
-          description: "Control, proliferate, and dominate the board with Planeswalkers.",
-          commander: "Atraxa, Praetors' Voice",
-          img: "https://cards.scryfall.io/normal/front/5/f/5f4b5d9f-f8f0-42bb-8e6c-f59eb716420f.jpg",
-          type: "control"
-        },
-        {
-          title: "Vampire Aggro",
-          description: "Fast-paced tribal strategy using Edgar’s vampire swarm.",
-          commander: "Edgar Markov",
-          img: "https://cards.scryfall.io/normal/front/d/2/d24ff43e-fdc7-4dc8-a917-0b84921c8f41.jpg",
-          type: "aggro"
-        },
-        {
-          title: "Lands Matter",
-          description: "Ramp hard, draw cards, and take over with value engines.",
-          commander: "Tatyova, Benthic Druid",
-          img: "https://cards.scryfall.io/normal/front/4/8/487d9c6a-2b8b-4d96-a6f0-2a61c77ef7d2.jpg",
-          type: "ramp"
-        }
-      ];
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+      import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+      import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-      function createDeckCard(deck, index) {
+      const firebaseConfig = {
+        apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
+        authDomain: "new-chat-8d4f4.firebaseapp.com",
+        databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
+        projectId: "new-chat-8d4f4",
+        storageBucket: "new-chat-8d4f4.appspot.com",
+        messagingSenderId: "998012770880",
+        appId: "1:998012770880:web:0b9cf74d0a92836b65a6d4"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      const auth = getAuth(app);
+      let currentUser = null;
+
+      function createDeckCard(deckId, deck) {
         const card = document.createElement("div");
         card.className = "deck-card";
-        const isNew = index === 0;
         card.innerHTML = `
-          ${isNew ? '<div class="badge">NEW</div>' : ''}
           <img src="${deck.img}" alt="${deck.commander}" />
           <h2>${deck.title}</h2>
           <p><strong>Commander:</strong> ${deck.commander}</p>
           <p>${deck.description}</p>
-          <button onclick="location.href='/deck-editor.html'">Open Deck</button>
+          <button onclick="location.href='/deck-editor.html?id=${deckId}'">Open Deck</button>
         `;
         return card;
       }
 
-      function loadDecks() {
+      function loadDecks(userId) {
+        const deckRef = ref(db, `users/${userId}/decks`);
         const container = document.getElementById("deckList");
-        container.innerHTML = "";
-        sampleDecks.forEach((deck, i) => container.appendChild(createDeckCard(deck, i)));
+        onValue(deckRef, snapshot => {
+          container.innerHTML = "";
+          const data = snapshot.val();
+          if (data) {
+            Object.entries(data).forEach(([deckId, deck]) => {
+              container.appendChild(createDeckCard(deckId, deck));
+            });
+          }
+        });
       }
 
       document.getElementById("createDeck").onclick = () => {
-        window.location.href = "/deck-editor.html";
+        if (!currentUser) return;
+        const decksRef = ref(db, `users/${currentUser.uid}/decks`);
+        const newDeckRef = push(decksRef);
+        set(newDeckRef, {
+          title: "New Deck",
+          commander: "Commander Name",
+          description: "Deck description...",
+          img: "https://cards.scryfall.io/normal/front/a/a/aaffb4e7-4072-480d-9794-fc958c9794a1.jpg"
+        }).then(() => {
+          window.location.href = `/deck-editor.html?id=${newDeckRef.key}`;
+        });
       };
 
-      window.onload = loadDecks;
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUser = user;
+          loadDecks(user.uid);
+        } else {
+          alert("Please log in to manage your decks.");
+        }
+      });
     </script>
   </body>
 </html>
