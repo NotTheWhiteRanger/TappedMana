@@ -1,1 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deck Builder - TappedMana</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="/assets/favicon.ico" type="image/x-icon" />
+</head>
+<body class="bg-gradient-to-b from-blue-100 to-white text-gray-800 font-sans">
+  <!-- Header -->
+  <header class="bg-blue-800 text-white py-4 shadow-md">
+    <div class="container mx-auto flex items-center justify-between px-4">
+      <a href="/" class="text-2xl font-bold">TappedMana</a>
+      <nav class="space-x-4">
+        <a href="/" class="hover:underline">Home</a>
+        <a href="/decks.html" class="underline font-semibold">Deck Builder</a>
+        <a href="/resources.html" class="hover:underline">Commander Resources</a>
+        <a href="/login/login.html" class="hover:underline">Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-6">Your Commander Decks</h1>
+
+    <div class="text-center mb-8">
+      <button id="createDeck" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+        + Create New Deck
+      </button>
+    </div>
+
+    <section id="deckList" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- Deck cards added by JS -->
+    </section>
+  </main>
+
+  <script src="/js/decks.js"></script>
+</body>
+</html>
 
