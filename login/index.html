@@ -90,8 +90,9 @@
             await signInWithEmailAndPassword(auth, email, password);
             window.location.href = "/";
           } catch (err) {
-            errorEl.textContent = "Login failed. Please check your credentials.";
-          }
+  console.error(err); // ← helpful for debugging
+  errorEl.textContent = `Error: ${err.code || err.message}`;
+}
         });
       });
     </script>
