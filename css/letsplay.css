@@ -13,6 +13,7 @@ body {
   height: 100vh;
 }
 
+/* PLAYER CONTAINERS */
 .player-container {
   position: absolute;
   width: 25vw;
@@ -31,11 +32,17 @@ body {
   overflow: hidden;
 }
 
-/* Player positions */
-.top    { top: 2%; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.bottom { bottom: 2%; left: 50%; transform: translateX(-50%); }
-.left   { top: 50%; left: 2%; transform: translateY(-50%) rotate(90deg); }
-.right  { top: 50%; right: 2%; transform: translateY(-50%) rotate(-90deg); }
+.top {
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%) rotate(180deg);
+}
+
+.bottom {
+  bottom: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
 .player-container h2 {
   margin: 0;
@@ -43,7 +50,7 @@ body {
   font-size: 16px;
 }
 
-/* Phase Tracker */
+/* PHASE BAR */
 .phase-bar {
   display: flex;
   flex-wrap: wrap;
@@ -67,7 +74,7 @@ body {
   color: #fff;
 }
 
-/* Zones */
+/* ZONES */
 .top-row,
 .middle-row {
   display: flex;
@@ -95,7 +102,7 @@ body {
   flex: 2;
 }
 
-/* Hand Zone (final fix applied here) */
+/* HAND */
 .hand {
   background: #151515;
   min-height: 130px;
@@ -116,7 +123,7 @@ body {
   padding-top: 12px;
 }
 
-/* Card Appearance */
+/* CARDS */
 .card {
   width: 80px;
   height: 112px;
@@ -132,20 +139,16 @@ body {
   z-index: 10;
 }
 
-/* Un-rotate cards inside rotated players */
+/* Fix card orientation inside rotated players */
 .player-container .card {
   transform: rotate(0deg) !important;
 }
 
-/* Shrink cards in rotated players */
-.top .card,
-.left .card,
-.right .card {
+.top .card {
   transform: scale(0.85) !important;
-  margin: 0 2px;
 }
 
-/* Life Button */
+/* LIFE BUTTON */
 .life {
   width: 80px;
   height: 80px;
@@ -166,7 +169,7 @@ body {
   background: #aa1e1e;
 }
 
-/* Turn Button */
+/* TURN BUTTON */
 .end-turn {
   margin: 0 auto;
   padding: 6px 12px;
@@ -184,6 +187,7 @@ body {
   background: #5a94ff;
 }
 
+/* HIGHLIGHT CURRENT PLAYER */
 .player-container.active {
   border-color: #3c7eff;
   box-shadow: 0 0 15px #3c7eff99;
