@@ -7,88 +7,35 @@
   <link rel="stylesheet" href="css/letsplay.css" />
 </head>
 <body>
-  <div id="gameboard">
+  <div class="player-container" id="player1">
+    <h2>Player 1</h2>
 
-    <!-- Player 2 (Top) -->
-    <div id="player2" class="player">
-      <h3>Player 2</h3>
-      <div class="player-zones">
-        <div class="commander-zone zone" id="commander2">Commander</div>
-        <div class="monster-zone zone" id="monsterZone2">Monster Zone</div>
-        <div class="row">
-          <div class="side-column">
-            <div class="zone" id="exile2">Exile</div>
-            <div class="zone" id="graveyard2">Graveyard</div>
-          </div>
-          <div class="mana-library">
-            <div class="zone" id="manaZone2">Mana Zone</div>
-            <div class="zone" id="library2">Library</div>
-          </div>
-        </div>
-        <div class="hand zone" id="hand2">Hand</div>
-      </div>
+    <!-- Phase Tracker -->
+    <div class="phase-bar">
+      <span>Untap</span>
+      <span>Upkeep</span>
+      <span>Draw</span>
+      <span>Main 1</span>
+      <span>Combat</span>
+      <span>Main 2</span>
+      <span>End</span>
     </div>
 
-    <!-- Player 3 (Left) -->
-    <div id="player3" class="player">
-      <h3>Player 3</h3>
-      <div class="player-zones">
-        <div class="commander-zone zone" id="commander3">Commander</div>
-        <div class="monster-zone zone" id="monsterZone3">Monster Zone</div>
-        <div class="row">
-          <div class="side-column">
-            <div class="zone" id="exile3">Exile</div>
-            <div class="zone" id="graveyard3">Graveyard</div>
-          </div>
-          <div class="mana-library">
-            <div class="zone" id="manaZone3">Mana Zone</div>
-            <div class="zone" id="library3">Library</div>
-          </div>
-        </div>
-        <div class="hand zone" id="hand3">Hand</div>
-      </div>
+    <!-- Zones -->
+    <div class="top-row">
+      <div class="life zone" id="life1">40</div>
+      <div class="zone" id="exile1">Exile</div>
+      <div class="zone" id="commander1">Commander</div>
+      <div class="zone large" id="monsterZone1">Creatures</div>
+      <div class="zone" id="library1">Library</div>
     </div>
 
-    <!-- Player 4 (Right) -->
-    <div id="player4" class="player">
-      <h3>Player 4</h3>
-      <div class="player-zones">
-        <div class="commander-zone zone" id="commander4">Commander</div>
-        <div class="monster-zone zone" id="monsterZone4">Monster Zone</div>
-        <div class="row">
-          <div class="side-column">
-            <div class="zone" id="exile4">Exile</div>
-            <div class="zone" id="graveyard4">Graveyard</div>
-          </div>
-          <div class="mana-library">
-            <div class="zone" id="manaZone4">Mana Zone</div>
-            <div class="zone" id="library4">Library</div>
-          </div>
-        </div>
-        <div class="hand zone" id="hand4">Hand</div>
-      </div>
+    <div class="middle-row">
+      <div class="zone large" id="manaZone1">Mana Zone</div>
+      <div class="zone" id="graveyard1">Graveyard</div>
     </div>
 
-    <!-- Player 1 (Bottom) -->
-    <div id="player1" class="player">
-      <h3>Player 1</h3>
-      <div class="player-zones">
-        <div class="commander-zone zone" id="commander1">Commander</div>
-        <div class="monster-zone zone" id="monsterZone1">Monster Zone</div>
-        <div class="row">
-          <div class="side-column">
-            <div class="zone" id="exile1">Exile</div>
-            <div class="zone" id="graveyard1">Graveyard</div>
-          </div>
-          <div class="mana-library">
-            <div class="zone" id="manaZone1">Mana Zone</div>
-            <div class="zone" id="library1">Library</div>
-          </div>
-        </div>
-        <div class="hand zone" id="hand1">Hand</div>
-      </div>
-    </div>
-
+    <div class="zone hand" id="hand1">Hand</div>
   </div>
 
   <script src="js/letsplay.js" defer></script>
