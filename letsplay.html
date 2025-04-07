@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TappedMana — Let's Play</title>
+  <title>TappedMana — 2 Player</title>
   <link rel="stylesheet" href="css/letsplay.css" />
 </head>
 <body>
   <div id="gameboard">
 
-    <!-- PLAYER 2 (Top Center) -->
+    <!-- PLAYER 2 -->
     <div class="player-container top" id="player2">
       <h2>Player 2</h2>
       <div class="phase-bar" id="phaseBar2"></div>
-      <button class="end-turn">End Turn</button>
       <div class="top-row">
         <div class="life zone" id="life2">40</div>
         <div class="zone" id="exile2">Exile</div>
@@ -26,51 +25,13 @@
         <div class="zone" id="graveyard2">Graveyard</div>
       </div>
       <div class="zone hand" id="hand2">Hand</div>
-    </div>
-
-    <!-- PLAYER 3 (Left Center) -->
-    <div class="player-container left" id="player3">
-      <h2>Player 3</h2>
-      <div class="phase-bar" id="phaseBar3"></div>
       <button class="end-turn">End Turn</button>
-      <div class="top-row">
-        <div class="life zone" id="life3">40</div>
-        <div class="zone" id="exile3">Exile</div>
-        <div class="zone" id="commander3">Commander</div>
-        <div class="zone large" id="monsterZone3">Creatures</div>
-        <div class="zone" id="library3">Library</div>
-      </div>
-      <div class="middle-row">
-        <div class="zone large" id="manaZone3">Mana Zone</div>
-        <div class="zone" id="graveyard3">Graveyard</div>
-      </div>
-      <div class="zone hand" id="hand3">Hand</div>
     </div>
 
-    <!-- PLAYER 4 (Right Center) -->
-    <div class="player-container right" id="player4">
-      <h2>Player 4</h2>
-      <div class="phase-bar" id="phaseBar4"></div>
-      <button class="end-turn">End Turn</button>
-      <div class="top-row">
-        <div class="life zone" id="life4">40</div>
-        <div class="zone" id="exile4">Exile</div>
-        <div class="zone" id="commander4">Commander</div>
-        <div class="zone large" id="monsterZone4">Creatures</div>
-        <div class="zone" id="library4">Library</div>
-      </div>
-      <div class="middle-row">
-        <div class="zone large" id="manaZone4">Mana Zone</div>
-        <div class="zone" id="graveyard4">Graveyard</div>
-      </div>
-      <div class="zone hand" id="hand4">Hand</div>
-    </div>
-
-    <!-- PLAYER 1 (Bottom Center) -->
+    <!-- PLAYER 1 -->
     <div class="player-container bottom" id="player1">
       <h2>Player 1</h2>
       <div class="phase-bar" id="phaseBar1"></div>
-      <button class="end-turn">End Turn</button>
       <div class="top-row">
         <div class="life zone" id="life1">40</div>
         <div class="zone" id="exile1">Exile</div>
@@ -83,6 +44,7 @@
         <div class="zone" id="graveyard1">Graveyard</div>
       </div>
       <div class="zone hand" id="hand1">Hand</div>
+      <button class="end-turn">End Turn</button>
     </div>
 
   </div>
