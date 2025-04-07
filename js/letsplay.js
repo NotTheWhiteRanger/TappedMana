@@ -1,4 +1,4 @@
-// Life Counter: Click to edit
+// Life Counter: Click to add/subtract, right-click to set
 document.querySelectorAll('.life').forEach(el => {
   const update = (delta) => {
     let current = parseInt(el.textContent, 10);
@@ -17,7 +17,7 @@ document.querySelectorAll('.life').forEach(el => {
   });
 });
 
-// Phase Tracker: highlight active phase
+// Phase Tracker: highlight current phase
 const phases = ["Untap", "Upkeep", "Draw", "Main 1", "Combat", "Main 2", "End"];
 const phaseTrackers = document.querySelectorAll('.phase-bar');
 
@@ -29,7 +29,6 @@ phaseTrackers.forEach(bar => {
   });
 });
 
-// Example: highlight current phase globally
 let currentPhase = 0;
 function updatePhaseHighlight() {
   document.querySelectorAll('.phase-bar span').forEach(span => span.classList.remove('active'));
@@ -40,4 +39,4 @@ function updatePhaseHighlight() {
 setInterval(() => {
   currentPhase = (currentPhase + 1) % phases.length;
   updatePhaseHighlight();
-}, 4000); // rotates every 4 seconds for demo
+}, 4000);
