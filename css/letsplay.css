@@ -13,33 +13,48 @@ body {
   height: 100vh;
 }
 
-/* Player Box */
+/* Optional: visual gap between top and bottom player areas */
+#gameboard::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #dbeafe;
+  z-index: 0;
+}
+
+/* Player Layout - full halves */
 .player-container {
   position: absolute;
-  width: 25vw;
-  min-width: 320px;
-  max-width: 400px;
+  width: 100vw;
+  height: 48%;
+  padding: 16px;
   background: #ffffff;
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transform-origin: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   z-index: 1;
+  border-radius: 16px;
+  box-sizing: border-box;
 }
 
 .top {
-  top: 2%;
-  left: 50%;
-  transform: translateX(-50%) rotate(180deg);
+  top: 1%;
+  left: 0;
+  transform: rotate(180deg);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .bottom {
-  bottom: 2%;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 1%;
+  left: 0;
+  transform: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .player-container h2 {
@@ -104,7 +119,7 @@ body {
   flex: 2;
 }
 
-/* Hand Zone */
+/* Hand */
 .hand {
   background: #f1f5f9;
   min-height: 130px;
@@ -187,7 +202,7 @@ body {
   background: #1e3a8a;
 }
 
-/* Highlight Current Player */
+/* Active Turn Border */
 .player-container.active {
   border: 2px solid #3b82f6;
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
