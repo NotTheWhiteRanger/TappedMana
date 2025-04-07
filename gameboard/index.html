@@ -43,6 +43,7 @@
       text-align: center;
       position: relative;
       box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
+      overflow: hidden;
     }
     .zone .count {
       position: absolute;
@@ -76,8 +77,8 @@
     .opponent-library { grid-column: 3; grid-row: 1; }
     .player-monster-zone { grid-column: 2; grid-row: 4; }
     .player-mana-zone { grid-column: 2; grid-row: 5; }
-    .exile { grid-column: 1; grid-row: 4; }
-    .graveyard { grid-column: 1; grid-row: 5; }
+    .exile { grid-column: 1; grid-row: 4; cursor: pointer; }
+    .graveyard { grid-column: 1; grid-row: 5; cursor: pointer; }
     .library { grid-column: 3; grid-row: 5; }
     .commander {
       grid-column: 3;
@@ -114,10 +115,15 @@
       height: 112px;
       border-radius: 8px;
       cursor: grab;
-      transition: transform 0.2s;
+      transition: transform 0.2s, opacity 0.2s ease, top 0.2s ease;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      animation: drop-in 0.2s ease;
     }
     .card.tapped { transform: rotate(90deg); }
+    @keyframes drop-in {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
     .zoom-overlay {
       position: fixed;
       top: 0;
@@ -144,6 +150,39 @@
       display: flex;
       gap: 10px;
     }
+    .card-viewer {
+  position: fixed;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.95);
+  padding: 10px;
+  border-radius: 10px;
+  display: none;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+  z-index: 1100;
+  max-height: 80vh;
+  width: 520px;
+  overflow-y: auto;
+  align-content: flex-start;
+}
+    .card-viewer img {
+  width: 100px;
+  height: auto;
+  border-radius: 6px;
+}
+    .card-viewer .close-btn {
+      align-self: flex-end;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -156,14 +195,14 @@
       <span id="opponentLifeTotal">40</span>
       <button data-action="increase" data-target="opponentLifeTotal">+</button>
     </div>
-    <div class="zone opponent-exile">Opponent Exile</div>
-    <div class="zone opponent-graveyard">Opponent Graveyard</div>
-    <div class="zone opponent-library">Opponent Library</div>
+    <div class="zone opponent-exile">Opponent Exile <span class="count" id="opponentExileCount">0</span></div>
+    <div class="zone opponent-graveyard">Opponent Graveyard <span class="count" id="opponentGraveyardCount">0</span></div>
+    <div class="zone opponent-library">Opponent Library <span class="count" id="opponentLibraryCount">0</span></div>
     <div class="zone player-monster-zone drop-zone">Monster Zone</div>
     <div class="zone player-mana-zone drop-zone">Mana Zone</div>
-    <div class="zone exile">Exile</div>
-    <div class="zone graveyard">Graveyard</div>
-    <div class="zone library">Library</div>
+    <div class="zone exile drop-zone">Exile <span class="count" id="exileCount">0</span></div>
+    <div class="zone graveyard drop-zone">Graveyard <span class="count" id="graveyardCount">0</span></div>
+    <div class="zone library drop-zone">Library <span class="count" id="libraryCount">0</span></div>
     <div class="zone commander">Commander</div>
     <div class="zone life-counter">
       <button data-action="decrease" data-target="lifeTotal">-</button>
@@ -172,98 +211,122 @@
     </div>
   </main>
   <div class="hand" id="hand"></div>
-  <script>
-    const hand = document.getElementById('hand');
-    const cards = [
-      "Black Lotus",
-      "Sol Ring",
-      "Lightning Bolt",
-      "Counterspell",
-      "Island",
-      "Mountain"
-    ];
+  <div class="card-viewer" id="cardViewer">
+    <button class="close-btn" onclick="document.getElementById('cardViewer').style.display='none'">Close</button>
+  </div>
+<script>
+  const hand = document.getElementById('hand');
+  const exampleCards = [
+    "Sol Ring",
+    "Lightning Bolt",
+    "Counterspell",
+    "Island",
+    "Black Lotus"
+  ];
 
-    function zoomCard(src) {
-      const overlay = document.createElement('div');
-      overlay.className = 'zoom-overlay';
-      overlay.onclick = () => overlay.remove();
-      const img = document.createElement('img');
-      img.src = src;
-      overlay.appendChild(img);
-      document.body.appendChild(overlay);
-    }
+  function zoomCard(src) {
+    const overlay = document.createElement("div");
+    overlay.className = "zoom-overlay";
+    overlay.onclick = () => overlay.remove();
+    const img = document.createElement("img");
+    img.src = src;
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+  }
 
-    cards.forEach(cardName => {
-      fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}`)
-        .then(res => res.json())
-        .then(data => {
-          const img = document.createElement('img');
-          img.src = data.image_uris.small;
-          img.dataset.zoom = data.image_uris.normal;
-          img.className = 'card';
-          img.draggable = true;
-          img.addEventListener('dragstart', e => {
-            e.dataTransfer.setData('text/plain', img.src);
-            e.dataTransfer.setData('zoom-src', img.dataset.zoom);
-          });
+  function createCard(card) {
+  const img = document.createElement('img');
+  img.className = 'card';
+  img.draggable = true;
+  img.dataset.normal = card.image_uris.normal;
+  img.src = card.image_uris.small;
+  img.ondblclick = () => zoomCard(card.image_uris.normal);
+  img.ondragstart = e => {
+    e.dataTransfer.setData("text/plain", JSON.stringify({
+      small: card.image_uris.small,
+      normal: card.image_uris.normal
+    }));
+    setTimeout(() => img.remove(), 0);
+  };
+  // No tap in hand zone
+  hand.appendChild(img);
+  }
 
-          let clickTimeout;
-          img.addEventListener('click', () => {
-            clearTimeout(clickTimeout);
-            clickTimeout = setTimeout(() => {
-              img.classList.toggle('tapped');
-            }, 200);
-          });
+  document.querySelectorAll(".drop-zone").forEach(zone => {
+    zone.ondragover = e => e.preventDefault();
+    zone.ondrop = e => {
+      e.preventDefault();
+      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      const img = document.createElement("img");
+      img.className = "card";
+      img.src = data.small;
+      img.draggable = true;
+      img.ondblclick = () => zoomCard(data.normal);
+      if (!zone.classList.contains("graveyard") && !zone.classList.contains("exile")) {
+        img.onclick = () => img.classList.toggle("tapped");
+      }
+      img.ondragstart = ev => {
+        ev.dataTransfer.setData("text/plain", JSON.stringify(data));
+        setTimeout(() => img.remove(), 0);
+      };
+      zone.appendChild(img);
 
-          img.addEventListener('dblclick', () => {
-            clearTimeout(clickTimeout);
-            zoomCard(img.dataset.zoom);
-          });
+      // Update card counts
+      if (zone.classList.contains("graveyard")) updateZoneCount("graveyard", "graveyardCount");
+      if (zone.classList.contains("exile")) updateZoneCount("exile", "exileCount");
+      if (zone.classList.contains("library")) updateZoneCount("library", "libraryCount");
 
-          hand.appendChild(img);
-        });
-    });
+      // Update viewer logic
+      if (zone.classList.contains("graveyard")) {
+        document.querySelector('.graveyard').onclick = () => showZoneCards("graveyard");
+      } else if (zone.classList.contains("exile")) {
+        document.querySelector('.exile').onclick = () => showZoneCards("exile");
+      }
 
-    document.querySelectorAll('button[data-action]').forEach(button => {
-      button.addEventListener('click', () => {
-        const target = document.getElementById(button.dataset.target);
-        let count = parseInt(target.textContent);
-        target.textContent = button.dataset.action === 'increase' ? ++count : --count;
-      });
-    });
+      img.style.position = "absolute";
+      img.style.top = `${zone.children.length * 2}px`;
+      img.style.left = `${zone.children.length * 2}px`;
+    };
+  });
 
-    document.querySelectorAll('.drop-zone').forEach(zone => {
-      zone.addEventListener('dragover', e => e.preventDefault());
-      zone.addEventListener('drop', e => {
-        e.preventDefault();
-        const src = e.dataTransfer.getData('text/plain');
-        const zoomSrc = e.dataTransfer.getData('zoom-src');
-        const img = document.createElement('img');
-        img.src = src;
-        img.dataset.zoom = zoomSrc;
-        img.className = 'card';
-        img.draggable = true;
-        img.addEventListener('dragstart', evt => {
-          evt.dataTransfer.setData('text/plain', img.src);
-          evt.dataTransfer.setData('zoom-src', img.dataset.zoom);
-        });
+  exampleCards.forEach(name => {
+    fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`)
+      .then(res => res.json())
+      .then(createCard)
+      .catch(err => console.error("Card load error:", name, err));
+  });
+function showZoneCards(zoneName) {
+  const zone = document.querySelector(`.${zoneName}`);
+  const viewer = document.getElementById('cardViewer');
+  viewer.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; width:100%">'
+    + '<h3 style="margin:0; font-size:1.1rem">' + zoneName.charAt(0).toUpperCase() + zoneName.slice(1) + '</h3>'
+    + '<button class="close-btn" onclick="document.getElementById(\'cardViewer\').style.display=\'none\'">Close</button>'
+    + '</div>';
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'flex';
+  wrapper.style.flexWrap = 'wrap';
+  wrapper.style.gap = '10px';
+  wrapper.style.marginTop = '10px';
+  viewer.appendChild(wrapper);
 
-        let clickTimeout;
-        img.addEventListener('click', () => {
-          clearTimeout(clickTimeout);
-          clickTimeout = setTimeout(() => {
-            img.classList.toggle('tapped');
-          }, 200);
-        });
+  [...zone.querySelectorAll('img')].forEach(card => {
+    const copy = card.cloneNode();
+    copy.className = 'card';
+    copy.style.position = 'static';
+    copy.onclick = null;
+    wrapper.appendChild(copy);
+  });
+  viewer.style.display = 'flex';
+}
 
-        img.addEventListener('dblclick', () => {
-          clearTimeout(clickTimeout);
-          zoomCard(zoomSrc);
-        });
-
-        zone.appendChild(img);
-      });
-    });
-  </script>
+function updateZoneCount(zoneClass, countId) {
+  const zone = document.querySelector(`.${zoneClass}`);
+  const countEl = document.getElementById(countId);
+  if (zone && countEl) {
+    const cardCount = zone.querySelectorAll('img').length;
+    countEl.textContent = cardCount;
+  }
+}
+</script>
 </body>
 </html>
