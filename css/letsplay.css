@@ -99,7 +99,7 @@ body {
   width: 100%;
 }
 
-/* Life Button */
+/* Life */
 .life {
   width: 80px;
   height: 80px;
@@ -117,7 +117,7 @@ body {
   background: #aa1e1e;
 }
 
-/* Turn System */
+/* Turn */
 .end-turn {
   margin: 0 auto;
   padding: 6px 12px;
@@ -138,4 +138,20 @@ body {
 .player-container.active {
   border-color: #3c7eff;
   box-shadow: 0 0 15px #3c7eff99;
+}
+
+/* Cards */
+.card {
+  width: 80px;
+  height: 112px;
+  background-size: cover;
+  border-radius: 4px;
+  box-shadow: 0 0 6px #000;
+  cursor: grab;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: scale(1.15);
+  z-index: 10;
 }
