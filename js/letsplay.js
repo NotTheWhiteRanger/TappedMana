@@ -17,9 +17,9 @@ document.querySelectorAll('.life').forEach(el => {
   });
 });
 
-// === PHASE TRACKER & TURNS ===
+// === PHASES & TURN SYSTEM ===
 const phases = ["Untap", "Upkeep", "Draw", "Main 1", "Combat", "Main 2", "End"];
-const players = [1, 2, 3, 4];
+const players = [1, 2];
 let currentPlayerIndex = 0;
 let currentPhase = 0;
 
@@ -64,7 +64,7 @@ function nextPhase() {
   highlightPhase();
 }
 
-// Init phase bars and current player
+// Setup
 buildPhaseBars();
 highlightActivePlayer();
 highlightPhase();
@@ -74,7 +74,7 @@ document.querySelectorAll('.end-turn').forEach(button => {
   button.addEventListener('click', () => nextTurn());
 });
 
-// === DRAW CARDS FROM SCRYFALL ON CLICK ===
+// === DRAW FROM LIBRARY (click library zone) ===
 document.querySelectorAll('[id^="library"]').forEach(lib => {
   lib.addEventListener('click', async () => {
     const playerNum = lib.id.replace('library', '');
@@ -82,7 +82,7 @@ document.querySelectorAll('[id^="library"]').forEach(lib => {
   });
 });
 
-// === CARD DRAW FUNCTION ===
+// === DRAW FUNCTION ===
 async function drawToHand(playerNum, count = 1) {
   const hand = document.getElementById(`hand${playerNum}`);
 
@@ -106,10 +106,10 @@ async function drawToHand(playerNum, count = 1) {
   }
 }
 
-// === STARTING HANDS: 7 CARDS EACH ===
+// === STARTING HANDS ===
 players.forEach(p => drawToHand(p, 7));
 
-// === DRAG & DROP SUPPORT ===
+// === DRAG & DROP ===
 function dragStart(event) {
   event.dataTransfer.setData('text/plain', event.target.src);
 }
