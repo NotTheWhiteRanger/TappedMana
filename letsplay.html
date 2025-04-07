@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TappedMana — 2 Player</title>
+  <title>TappedMana — Let's Play</title>
   <link rel="stylesheet" href="css/letsplay.css" />
 </head>
 <body>
   <div id="gameboard">
-
-    <!-- PLAYER 2 -->
+    <!-- Player 2 -->
     <div class="player-container top" id="player2">
       <h2>Player 2</h2>
       <div class="phase-bar" id="phaseBar2"></div>
@@ -17,18 +16,18 @@
         <div class="life zone" id="life2">40</div>
         <div class="zone" id="exile2">Exile</div>
         <div class="zone" id="commander2">Commander</div>
-        <div class="zone large" id="monsterZone2">Creatures</div>
+        <div class="zone large dropzone" id="monsterZone2">Creatures</div>
         <div class="zone" id="library2">Library</div>
       </div>
       <div class="middle-row">
-        <div class="zone large" id="manaZone2">Mana Zone</div>
+        <div class="zone large dropzone" id="manaZone2">Mana Zone</div>
         <div class="zone" id="graveyard2">Graveyard</div>
       </div>
-      <div class="zone hand" id="hand2">Hand</div>
+      <div class="zone hand" id="hand2"></div>
       <button class="end-turn">End Turn</button>
     </div>
 
-    <!-- PLAYER 1 -->
+    <!-- Player 1 -->
     <div class="player-container bottom" id="player1">
       <h2>Player 1</h2>
       <div class="phase-bar" id="phaseBar1"></div>
@@ -36,17 +35,21 @@
         <div class="life zone" id="life1">40</div>
         <div class="zone" id="exile1">Exile</div>
         <div class="zone" id="commander1">Commander</div>
-        <div class="zone large" id="monsterZone1">Creatures</div>
+        <div class="zone large dropzone" id="monsterZone1">Creatures</div>
         <div class="zone" id="library1">Library</div>
       </div>
       <div class="middle-row">
-        <div class="zone large" id="manaZone1">Mana Zone</div>
+        <div class="zone large dropzone" id="manaZone1">Mana Zone</div>
         <div class="zone" id="graveyard1">Graveyard</div>
       </div>
-      <div class="zone hand" id="hand1">Hand</div>
+      <div class="zone hand" id="hand1"></div>
       <button class="end-turn">End Turn</button>
     </div>
+  </div>
 
+  <!-- Zoom Modal -->
+  <div id="zoomModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000000aa; justify-content:center; align-items:center; z-index:1000;">
+    <img id="zoomImg" src="" style="max-height:90vh; max-width:90vw; border-radius:8px; box-shadow:0 0 20px #000;" />
   </div>
 
   <script src="js/letsplay.js" defer></script>
