@@ -1,27 +1,8 @@
-function searchCard() {
-  const name = document.getElementById('cardName').value;
-  fetch(`https://api.scryfall.com/cards/named?fuzzy=${name}`)
-    .then(res => res.json())
-    .then(data => {
-      const results = document.getElementById('search-results');
-      results.innerHTML = '';
-
-      const img = document.createElement('img');
-      img.src = data.image_uris.normal;
-      img.className = 'card';
-      img.draggable = true;
-      img.addEventListener('dragstart', dragStart);
-
-      results.appendChild(img);
-    })
-    .catch(() => alert('Card not found!'));
-}
-
 function dragStart(event) {
   event.dataTransfer.setData('text/plain', event.target.src);
 }
 
-document.querySelectorAll('.zone, .hand, .shared-zone').forEach(zone => {
+document.querySelectorAll('.zone, .hand').forEach(zone => {
   zone.addEventListener('dragover', e => e.preventDefault());
   zone.addEventListener('drop', e => {
     e.preventDefault();
@@ -34,4 +15,3 @@ document.querySelectorAll('.zone, .hand, .shared-zone').forEach(zone => {
     zone.appendChild(img);
   });
 });
-
