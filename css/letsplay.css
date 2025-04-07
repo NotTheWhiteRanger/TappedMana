@@ -13,13 +13,11 @@ body {
   height: 100vh;
 }
 
-/* Universal Player Layout */
 .player-container {
   position: absolute;
   width: 25vw;
   min-width: 320px;
   max-width: 400px;
-  height: auto;
   background: #111;
   border: 2px solid #333;
   border-radius: 12px;
@@ -31,7 +29,7 @@ body {
   transform-origin: center;
 }
 
-/* Player Positions */
+/* Positions */
 .top    { top: 2%; left: 50%; transform: translateX(-50%) rotate(180deg); }
 .bottom { bottom: 2%; left: 50%; transform: translateX(-50%); }
 .left   { top: 50%; left: 2%; transform: translateY(-50%) rotate(90deg); }
@@ -43,7 +41,7 @@ body {
   font-size: 16px;
 }
 
-/* Phase Bar */
+/* Phase Tracker */
 .phase-bar {
   display: flex;
   flex-wrap: wrap;
@@ -101,6 +99,7 @@ body {
   width: 100%;
 }
 
+/* Life Button */
 .life {
   width: 80px;
   height: 80px;
@@ -116,4 +115,27 @@ body {
 
 .life:hover {
   background: #aa1e1e;
+}
+
+/* Turn System */
+.end-turn {
+  margin: 0 auto;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  background: #3c7eff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.end-turn:hover {
+  background: #5a94ff;
+}
+
+.player-container.active {
+  border-color: #3c7eff;
+  box-shadow: 0 0 15px #3c7eff99;
 }
