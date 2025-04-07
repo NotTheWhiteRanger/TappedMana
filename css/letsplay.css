@@ -28,6 +28,7 @@ body {
   gap: 10px;
   transform-origin: center;
   z-index: 1;
+  overflow: hidden; /* Prevent overflow */
 }
 
 /* Player positions */
@@ -94,10 +95,11 @@ body {
   flex: 2;
 }
 
-/* Hand Zone (fixed height + scroll + spacing) */
+/* Hand Zone */
 .hand {
   background: #151515;
   min-height: 130px;
+  max-height: 130px;
   height: 130px;
   width: 100%;
   display: flex;
@@ -129,14 +131,12 @@ body {
   transform: rotate(0deg) !important;
 }
 
-/* Optional: Rotate hand cards for left/right/top players visually */
+/* Shrink cards in rotated players to prevent layout collision */
+.top .card,
 .left .card,
 .right .card {
-  transform: rotate(-90deg) !important;
-}
-
-.top .card {
-  transform: rotate(180deg) !important;
+  transform: scale(0.85) !important;
+  margin: 0 2px;
 }
 
 /* Life Button */
