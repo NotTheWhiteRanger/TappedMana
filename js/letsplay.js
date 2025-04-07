@@ -1,4 +1,4 @@
-// Life Counter: Click to add/subtract, right-click to set
+// LIFE COUNTER
 document.querySelectorAll('.life').forEach(el => {
   const update = (delta) => {
     let current = parseInt(el.textContent, 10);
@@ -17,26 +17,64 @@ document.querySelectorAll('.life').forEach(el => {
   });
 });
 
-// Phase Tracker: highlight current phase
+// PHASE TRACKER
 const phases = ["Untap", "Upkeep", "Draw", "Main 1", "Combat", "Main 2", "End"];
-const phaseTrackers = document.querySelectorAll('.phase-bar');
-
-phaseTrackers.forEach(bar => {
-  phases.forEach(phase => {
-    const span = document.createElement('span');
-    span.textContent = phase;
-    bar.appendChild(span);
-  });
-});
-
+const players = [1, 2, 3, 4];
+let currentPlayerIndex = 0;
 let currentPhase = 0;
-function updatePhaseHighlight() {
-  document.querySelectorAll('.phase-bar span').forEach(span => span.classList.remove('active'));
-  document.querySelectorAll(`.phase-bar span:nth-child(${currentPhase + 1})`)
-    .forEach(span => span.classList.add('active'));
+
+function buildPhaseBars() {
+  players.forEach(num => {
+    const bar = document.getElementById(`phaseBar${num}`);
+    bar.innerHTML = '';
+    phases.forEach(phase => {
+      const span = document.createElement('span');
+      span.textContent = phase;
+      bar.appendChild(span);
+    });
+  });
 }
 
-setInterval(() => {
+function highlightPhase() {
+  players.forEach(num => {
+    const bar = document.getElementById(`phaseBar${num}`);
+    const spans = bar.querySelectorAll('span');
+    spans.forEach((span, i) => {
+      span.classList.toggle('active', i === currentPhase);
+    });
+  });
+}
+
+function highlightActivePlayer() {
+  players.forEach(num => {
+    const container = document.getElementById(`player${num}`);
+    container.classList.toggle('active', num === players[currentPlayerIndex]);
+  });
+}
+
+function nextTurn() {
+  currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+  currentPhase = 0;
+  highlightPhase();
+  highlightActivePlayer();
+}
+
+function nextPhase() {
   currentPhase = (currentPhase + 1) % phases.length;
-  updatePhaseHighlight();
-}, 4000);
+  highlightPhase();
+}
+
+// INIT
+buildPhaseBars();
+highlightActivePlayer();
+highlightPhase();
+
+// DEMO PHASE CYCLE (every 4s)
+setInterval(nextPhase, 4000);
+
+// END TURN BUTTON
+document.querySelectorAll('.end-turn').forEach(button => {
+  button.addEventListener('click', () => {
+    nextTurn();
+  });
+});
