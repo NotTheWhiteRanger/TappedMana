@@ -185,6 +185,11 @@
         color: #64748b;
         font-size: 0.9rem;
       }
+      /* Remove default link styling for card links */
+      a.card-link {
+        text-decoration: none;
+        color: inherit;
+      }
     </style>
   </head>
   <body>
@@ -219,10 +224,13 @@
     </section>
 
     <section class="features">
-      <div class="card">
-        <h3>Deck Builder</h3>
-        <p>Create, edit, and share your Commander decks with intuitive tools and Scryfall integration.</p>
-      </div>
+      <!-- Wrapped the Deck Builder card in an anchor -->
+      <a href="decks.html" class="card-link">
+        <div class="card">
+          <h3>Deck Builder</h3>
+          <p>Create, edit, and share your Commander decks with intuitive tools and Scryfall integration.</p>
+        </div>
+      </a>
       <div class="card" style="cursor: pointer;" onclick="window.location.href='https://tappedmana.com/letsplay.html';">
         <h3>Play Online</h3>
         <p>Join live multiplayer games, track turns, and manage your life total with our online table.</p>
