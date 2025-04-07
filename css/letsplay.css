@@ -27,9 +27,10 @@ body {
   flex-direction: column;
   gap: 10px;
   transform-origin: center;
+  z-index: 1;
 }
 
-/* Positions */
+/* Player positions */
 .top    { top: 2%; left: 50%; transform: translateX(-50%) rotate(180deg); }
 .bottom { bottom: 2%; left: 50%; transform: translateX(-50%); }
 .left   { top: 50%; left: 2%; transform: translateY(-50%) rotate(90deg); }
@@ -66,7 +67,8 @@ body {
 }
 
 /* Zones */
-.top-row, .middle-row {
+.top-row,
+.middle-row {
   display: flex;
   justify-content: space-between;
   gap: 6px;
@@ -92,14 +94,52 @@ body {
   flex: 2;
 }
 
+/* Hand Zone (fixed height + scroll + spacing) */
 .hand {
   background: #151515;
-  min-height: 60px;
-  height: 60px;
+  min-height: 130px;
+  height: 130px;
   width: 100%;
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 6px;
 }
 
-/* Life */
+/* Card Appearance */
+.card {
+  width: 80px;
+  height: 112px;
+  background-size: cover;
+  border-radius: 4px;
+  box-shadow: 0 0 6px #000;
+  cursor: grab;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: scale(1.15);
+  z-index: 10;
+}
+
+/* Un-rotate cards inside rotated players */
+.player-container .card {
+  transform: rotate(0deg) !important;
+}
+
+/* Optional: Rotate hand cards for left/right/top players visually */
+.left .card,
+.right .card {
+  transform: rotate(-90deg) !important;
+}
+
+.top .card {
+  transform: rotate(180deg) !important;
+}
+
+/* Life Button */
 .life {
   width: 80px;
   height: 80px;
@@ -111,13 +151,16 @@ body {
   cursor: pointer;
   user-select: none;
   transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .life:hover {
   background: #aa1e1e;
 }
 
-/* Turn */
+/* Turn Button */
 .end-turn {
   margin: 0 auto;
   padding: 6px 12px;
@@ -138,20 +181,4 @@ body {
 .player-container.active {
   border-color: #3c7eff;
   box-shadow: 0 0 15px #3c7eff99;
-}
-
-/* Cards */
-.card {
-  width: 80px;
-  height: 112px;
-  background-size: cover;
-  border-radius: 4px;
-  box-shadow: 0 0 6px #000;
-  cursor: grab;
-  transition: transform 0.2s ease;
-}
-
-.card:hover {
-  transform: scale(1.15);
-  z-index: 10;
 }
