@@ -8,53 +8,33 @@ body {
 }
 
 #gameboard {
-  position: relative;
-  width: 100vw;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-}
-
-/* Optional: visual gap between top and bottom player areas */
-#gameboard::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #dbeafe;
-  z-index: 0;
-}
-
-/* Player Layout - full halves */
-.player-container {
-  position: absolute;
   width: 100vw;
-  height: 48%;
-  padding: 16px;
+}
+
+/* Half-Screen Player Containers */
+.player-container {
+  flex: 1;
+  width: 100%;
   background: #ffffff;
   display: flex;
   flex-direction: column;
+  padding: 16px;
   gap: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  z-index: 1;
-  border-radius: 16px;
   box-sizing: border-box;
+  box-shadow: inset 0 -1px 0 #dbeafe;
+  overflow: hidden;
+  position: relative;
 }
 
 .top {
-  top: 1%;
-  left: 0;
   transform: rotate(180deg);
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 
-.bottom {
-  bottom: 1%;
-  left: 0;
-  transform: none;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+.top * {
+  transform: rotate(180deg);
 }
 
 .player-container h2 {
@@ -68,13 +48,13 @@ body {
 /* Phase Tracker */
 .phase-bar {
   display: flex;
+  justify-content: center;
+  gap: 6px;
   flex-wrap: wrap;
-  justify-content: space-between;
   background: #e0e7ff;
   padding: 6px;
   border-radius: 8px;
   font-size: 12px;
-  gap: 4px;
 }
 
 .phase-bar span {
@@ -123,7 +103,6 @@ body {
 .hand {
   background: #f1f5f9;
   min-height: 130px;
-  max-height: 130px;
   height: 130px;
   width: 100%;
   display: flex;
@@ -134,11 +113,6 @@ body {
   border-radius: 10px;
 }
 
-.bottom .hand {
-  padding-top: 14px;
-}
-
-/* Cards */
 .card {
   width: 80px;
   height: 112px;
@@ -154,15 +128,6 @@ body {
   z-index: 10;
 }
 
-.player-container .card {
-  transform: rotate(0deg) !important;
-}
-
-.top .card {
-  transform: scale(0.85) !important;
-}
-
-/* Life Counter */
 .life {
   width: 80px;
   height: 80px;
@@ -173,18 +138,11 @@ body {
   font-weight: bold;
   cursor: pointer;
   user-select: none;
-  transition: background 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 0 6px #1e40af;
 }
 
-.life:hover {
-  background: #1e40af;
-}
-
-/* Turn Button */
 .end-turn {
   margin: 0 auto;
   padding: 8px 16px;
@@ -195,14 +153,8 @@ body {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
-.end-turn:hover {
-  background: #1e3a8a;
-}
-
-/* Active Turn Border */
 .player-container.active {
   border: 2px solid #3b82f6;
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
