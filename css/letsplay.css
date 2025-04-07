@@ -13,30 +13,28 @@ body {
     ".       player2     ."
     "player3 .           player4"
     ".       player1     .";
+  grid-template-columns: 1fr 2fr 1fr;
   grid-template-rows: 25% 50% 25%;
-  grid-template-columns: 25% 50% 25%;
   height: 100vh;
   width: 100vw;
-  gap: 4px;
+  gap: 6px;
 }
 
-/* Player placement */
 #player1 { grid-area: player1; }
 #player2 { grid-area: player2; }
 #player3 { grid-area: player3; }
 #player4 { grid-area: player4; }
 
-/* Player container */
 .player {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   background: #161616;
   border: 2px solid #2e2e2e;
   border-radius: 10px;
   box-shadow: 0 0 10px #00000088;
   padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   max-width: 100%;
   max-height: 100%;
   overflow: hidden;
@@ -47,7 +45,6 @@ body {
   margin: 4px 0;
 }
 
-/* Battlefield content */
 .player-zones {
   display: flex;
   flex-direction: column;
@@ -63,6 +60,7 @@ body {
 #player4 .player-zones { transform: rotate(-90deg); transform-origin: center; }
 #player1 .player-zones { transform: rotate(0deg); }
 
+/* Zones */
 .zone {
   background: #252525;
   border-radius: 6px;
@@ -128,7 +126,6 @@ body {
   flex: 1;
 }
 
-/* Card */
 .card {
   width: 80px;
   height: 112px;
