@@ -1,1 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TappedMana — Let's Play</title>
+  <link rel="stylesheet" href="css/letsplay.css" />
+</head>
+<body>
+  <div id="gameboard">
+    <div class="player top" id="player2">
+      <h3>Player 2</h3>
+      <div class="zones">
+        <div class="zone" id="commandZone2">Command</div>
+        <div class="zone" id="battlefield2">Battlefield</div>
+        <div class="zone" id="graveyard2">Graveyard</div>
+        <div class="hand" id="hand2">Hand</div>
+      </div>
+    </div>
+
+    <div class="middle-row">
+      <div class="player left" id="player3">
+        <h3>Player 3</h3>
+        <div class="zones">
+          <div class="zone" id="commandZone3">Command</div>
+          <div class="zone" id="battlefield3">Battlefield</div>
+          <div class="zone" id="graveyard3">Graveyard</div>
+          <div class="hand" id="hand3">Hand</div>
+        </div>
+      </div>
+
+      <div class="center">
+        <div class="shared-zone" id="stack">Stack</div>
+        <div class="shared-zone" id="exile">Exile</div>
+
+        <div class="card-search">
+          <input type="text" id="cardName" placeholder="Search card..." />
+          <button onclick="searchCard()">Search</button>
+        </div>
+
+        <div id="search-results"></div>
+      </div>
+
+      <div class="player right" id="player1">
+        <h3>Player 1</h3>
+        <div class="zones">
+          <div class="zone" id="commandZone1">Command</div>
+          <div class="zone" id="battlefield1">Battlefield</div>
+          <div class="zone" id="graveyard1">Graveyard</div>
+          <div class="hand" id="hand1">Hand</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="player bottom" id="player4">
+      <h3>Player 4</h3>
+      <div class="zones">
+        <div class="zone" id="commandZone4">Command</div>
+        <div class="zone" id="battlefield4">Battlefield</div>
+        <div class="zone" id="graveyard4">Graveyard</div>
+        <div class="hand" id="hand4">Hand</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/letsplay.js" defer></script>
+</body>
+</html>
 
