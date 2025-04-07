@@ -17,7 +17,7 @@ document.querySelectorAll('.life').forEach(el => {
   });
 });
 
-// === PHASES + TURN SYSTEM ===
+// === PHASE TRACKER & TURNS ===
 const phases = ["Untap", "Upkeep", "Draw", "Main 1", "Combat", "Main 2", "End"];
 const players = [1, 2, 3, 4];
 let currentPlayerIndex = 0;
@@ -64,6 +64,7 @@ function nextPhase() {
   highlightPhase();
 }
 
+// Init phase bars and current player
 buildPhaseBars();
 highlightActivePlayer();
 highlightPhase();
@@ -73,31 +74,42 @@ document.querySelectorAll('.end-turn').forEach(button => {
   button.addEventListener('click', () => nextTurn());
 });
 
-// === DRAW CARDS FROM Scryfall ===
+// === DRAW CARDS FROM SCRYFALL ON CLICK ===
 document.querySelectorAll('[id^="library"]').forEach(lib => {
   lib.addEventListener('click', async () => {
     const playerNum = lib.id.replace('library', '');
-    const hand = document.getElementById(`hand${playerNum}`);
-
-    const res = await fetch("https://api.scryfall.com/cards/random");
-    const data = await res.json();
-    const imageUrl = data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal;
-
-    if (!imageUrl) {
-      alert("Could not fetch card.");
-      return;
-    }
-
-    const img = document.createElement('img');
-    img.src = imageUrl;
-    img.className = 'card';
-    img.draggable = true;
-    img.addEventListener('dragstart', dragStart);
-    hand.appendChild(img);
+    await drawToHand(playerNum, 1);
   });
 });
 
-// === DRAG & DROP ===
+// === CARD DRAW FUNCTION ===
+async function drawToHand(playerNum, count = 1) {
+  const hand = document.getElementById(`hand${playerNum}`);
+
+  for (let i = 0; i < count; i++) {
+    try {
+      const res = await fetch("https://api.scryfall.com/cards/random");
+      const data = await res.json();
+      const imageUrl = data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal;
+
+      if (!imageUrl) continue;
+
+      const img = document.createElement('img');
+      img.src = imageUrl;
+      img.className = 'card';
+      img.draggable = true;
+      img.addEventListener('dragstart', dragStart);
+      hand.appendChild(img);
+    } catch (err) {
+      console.error("Failed to draw:", err);
+    }
+  }
+}
+
+// === STARTING HANDS: 7 CARDS EACH ===
+players.forEach(p => drawToHand(p, 7));
+
+// === DRAG & DROP SUPPORT ===
 function dragStart(event) {
   event.dataTransfer.setData('text/plain', event.target.src);
 }
