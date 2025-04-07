@@ -8,12 +8,12 @@
 </head>
 <body>
   <div id="gameboard">
-    
-    <!-- Player 1 -->
+
+    <!-- PLAYER 1 -->
     <div class="player" id="player1">
       <h3>Player 1</h3>
       <div class="player-zones">
-        <div class="commander-zone zone">Commander</div>
+        <div class="commander-zone zone" id="commander1">Commander</div>
         <div class="monster-zone zone" id="monsterZone1">Monster Zone</div>
         <div class="row">
           <div class="side-column">
@@ -29,11 +29,11 @@
       </div>
     </div>
 
-    <!-- Player 2 -->
+    <!-- PLAYER 2 -->
     <div class="player" id="player2">
       <h3>Player 2</h3>
       <div class="player-zones">
-        <div class="commander-zone zone">Commander</div>
+        <div class="commander-zone zone" id="commander2">Commander</div>
         <div class="monster-zone zone" id="monsterZone2">Monster Zone</div>
         <div class="row">
           <div class="side-column">
@@ -49,11 +49,11 @@
       </div>
     </div>
 
-    <!-- Player 3 -->
+    <!-- PLAYER 3 -->
     <div class="player" id="player3">
       <h3>Player 3</h3>
       <div class="player-zones">
-        <div class="commander-zone zone">Commander</div>
+        <div class="commander-zone zone" id="commander3">Commander</div>
         <div class="monster-zone zone" id="monsterZone3">Monster Zone</div>
         <div class="row">
           <div class="side-column">
@@ -69,11 +69,11 @@
       </div>
     </div>
 
-    <!-- Player 4 -->
+    <!-- PLAYER 4 -->
     <div class="player" id="player4">
       <h3>Player 4</h3>
       <div class="player-zones">
-        <div class="commander-zone zone">Commander</div>
+        <div class="commander-zone zone" id="commander4">Commander</div>
         <div class="monster-zone zone" id="monsterZone4">Monster Zone</div>
         <div class="row">
           <div class="side-column">
@@ -87,19 +87,6 @@
         </div>
         <div class="hand zone" id="hand4">Hand</div>
       </div>
-    </div>
-
-    <!-- Shared Center -->
-    <div class="center">
-      <div class="shared-zone" id="stack">Stack</div>
-      <div class="shared-zone" id="shared-exile">Exile</div>
-
-      <div class="card-search">
-        <input type="text" id="cardName" placeholder="Search card..." />
-        <button onclick="searchCard()">Search</button>
-      </div>
-
-      <div id="search-results"></div>
     </div>
 
   </div>
