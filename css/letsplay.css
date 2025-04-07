@@ -11,19 +11,19 @@ body {
   width: 100vw;
   height: 100vh;
   display: grid;
-  grid-template-rows: 1fr auto 1fr;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: 25% 50% 25%;
+  grid-template-columns: 25% 50% 25%;
   gap: 10px;
   padding: 10px;
   box-sizing: border-box;
 }
 
-/* Player Grid Positions */
-#player1 { grid-column: 2; grid-row: 3; }
-#player2 { grid-column: 2; grid-row: 1; }
-#player3 { grid-column: 1; grid-row: 2; }
-#player4 { grid-column: 3; grid-row: 2; }
-.center  { grid-column: 2; grid-row: 2; }
+/* PLAYER POSITIONING */
+#player1 { grid-row: 3; grid-column: 2; } /* Bottom */
+#player2 { grid-row: 1; grid-column: 2; } /* Top */
+#player3 { grid-row: 2; grid-column: 1; } /* Left */
+#player4 { grid-row: 2; grid-column: 3; } /* Right */
+.center  { grid-row: 2; grid-column: 2; } /* Middle */
 
 .player {
   background: #1a1a1a;
@@ -34,8 +34,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 400px;
-  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: auto;
 }
 
 .player h3 {
@@ -53,7 +54,7 @@ body {
   width: 100%;
 }
 
-/* Each Zone Type */
+/* Zones */
 .zone {
   background: #222;
   border: 1px dashed #666;
@@ -80,7 +81,6 @@ body {
   min-height: 100px;
 }
 
-/* Row with graveyard, exile, mana, library */
 .row {
   display: flex;
   width: 100%;
@@ -108,7 +108,7 @@ body {
   background: #1c1c1c;
 }
 
-/* Shared Center Zones */
+/* Center area: shared zones and search */
 .center {
   background: #2b2b2b;
   border-radius: 8px;
@@ -119,6 +119,8 @@ body {
   align-items: center;
   gap: 10px;
   min-width: 200px;
+  max-height: 100%;
+  overflow: auto;
 }
 
 .shared-zone {
@@ -132,7 +134,7 @@ body {
   min-height: 80px;
 }
 
-/* Search */
+/* Card Search */
 .card-search {
   display: flex;
   gap: 5px;
