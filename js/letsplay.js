@@ -1,8 +1,19 @@
-// === LIFE TRACKER ===
+// === GLOBAL STATE ===
+const phases = ["Untap", "Upkeep", "Draw", "Main 1", "Combat", "Main 2", "End"];
+const players = [1, 2];
+let currentPlayerIndex = 0;
+let currentPhase = 0;
+let hasPlayedLandThisTurn = { 1: false, 2: false };
+
+function log(message) {
+  console.log(message);
+}
+
+// === LIFE COUNTER ===
 document.querySelectorAll('.life').forEach(el => {
   const update = (delta) => {
     let current = parseInt(el.textContent, 10);
-    el.textContent = current + delta;
+    el.textContent = Math.max(0, current + delta);
   };
   el.addEventListener('click', (e) => {
     if (e.shiftKey) update(-1);
@@ -15,12 +26,7 @@ document.querySelectorAll('.life').forEach(el => {
   });
 });
 
-// === PHASES & TURN CYCLE ===
-const phases = ["Untap", "Upkeep", "Draw", "Main 1", "Combat", "Main 2", "End"];
-const players = [1, 2];
-let currentPlayerIndex = 0;
-let currentPhase = 0;
-
+// === PHASES & TURN SYSTEM ===
 function buildPhaseBars() {
   players.forEach(num => {
     const bar = document.getElementById(`phaseBar${num}`);
@@ -35,8 +41,7 @@ function buildPhaseBars() {
 
 function highlightPhase() {
   players.forEach(num => {
-    const bar = document.getElementById(`phaseBar${num}`);
-    const spans = bar.querySelectorAll('span');
+    const spans = document.getElementById(`phaseBar${num}`).querySelectorAll('span');
     spans.forEach((span, i) => {
       span.classList.toggle('active', i === currentPhase);
     });
@@ -45,14 +50,15 @@ function highlightPhase() {
 
 function highlightActivePlayer() {
   players.forEach(num => {
-    const container = document.getElementById(`player${num}`);
-    container.classList.toggle('active', num === players[currentPlayerIndex]);
+    const el = document.getElementById(`player${num}`);
+    el.classList.toggle('active', num === players[currentPlayerIndex]);
   });
 }
 
 function nextTurn() {
   currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
   currentPhase = 0;
+  hasPlayedLandThisTurn[players[currentPlayerIndex]] = false;
   highlightPhase();
   highlightActivePlayer();
 }
@@ -62,16 +68,16 @@ function nextPhase() {
   highlightPhase();
 }
 
+document.querySelectorAll('.end-turn').forEach(btn => {
+  btn.addEventListener('click', () => nextTurn());
+});
+
 buildPhaseBars();
 highlightActivePlayer();
 highlightPhase();
 setInterval(nextPhase, 4000);
 
-document.querySelectorAll('.end-turn').forEach(btn => {
-  btn.addEventListener('click', () => nextTurn());
-});
-
-// === DRAW FROM SCRYFALL ===
+// === CARD DRAW (Scryfall) ===
 document.querySelectorAll('[id^="library"]').forEach(lib => {
   lib.addEventListener('click', async () => {
     const playerNum = lib.id.replace('library', '');
@@ -92,6 +98,8 @@ async function drawToHand(playerNum, count = 1) {
       img.src = imageUrl;
       img.className = 'card';
       img.draggable = true;
+      img.dataset.cardName = data.name;
+      img.dataset.isLand = (data.type_line || '').includes('Land');
       img.addEventListener('dragstart', dragStart);
       img.addEventListener('click', tapCard);
       img.addEventListener('contextmenu', openCardMenu);
@@ -105,12 +113,13 @@ async function drawToHand(playerNum, count = 1) {
 
 players.forEach(p => drawToHand(p, 7));
 
-// === DRAG & DROP LOGIC ===
+// === DRAG & DROP ===
 function dragStart(e) {
   e.dataTransfer.setData('text/plain', e.target.src);
   e.dataTransfer.setData('origin-id', e.target.parentElement.id);
-  e.dataTransfer.setData('card-id', e.target.dataset.cid || '');
-  setTimeout(() => e.target.style.display = "none", 1); // temporary hide
+  e.dataTransfer.setData('card-name', e.target.dataset.cardName || '');
+  e.dataTransfer.setData('is-land', e.target.dataset.isLand || 'false');
+  setTimeout(() => e.target.style.display = "none", 1);
 }
 
 document.querySelectorAll('.zone, .hand').forEach(zone => {
@@ -120,23 +129,27 @@ document.querySelectorAll('.zone, .hand').forEach(zone => {
     const url = e.dataTransfer.getData('text/plain');
     const origin = e.dataTransfer.getData('origin-id');
     const target = e.currentTarget.id;
+    const name = e.dataTransfer.getData('card-name');
+    const isLand = e.dataTransfer.getData('is-land') === 'true';
 
-    if (origin === target) {
-      const existing = Array.from(e.currentTarget.querySelectorAll('img'))
-        .find(img => img.src === url);
-      if (existing) {
-        existing.style.display = 'inline';
-        return;
-      }
+    const playerNum = target.match(/\d+/)?.[0];
+    const isMainPhase = ["Main 1", "Main 2"].includes(phases[currentPhase]);
+    const isSamePlayer = origin.includes(playerNum);
+
+    if (target.includes("battlefield") && isLand && hasPlayedLandThisTurn[playerNum]) {
+      alert("You already played a land this turn.");
+      return;
     }
 
-    const existing = Array.from(e.currentTarget.querySelectorAll('img'))
-      .find(img => img.src === url);
-    if (existing) return; // prevent duplicates
+    if (isLand && target.includes("battlefield") && isMainPhase && isSamePlayer) {
+      hasPlayedLandThisTurn[playerNum] = true;
+    }
 
     const card = document.createElement('img');
     card.src = url;
     card.className = 'card';
+    card.dataset.cardName = name;
+    card.dataset.isLand = isLand;
     card.draggable = true;
     card.addEventListener('dragstart', dragStart);
     card.addEventListener('click', tapCard);
@@ -144,32 +157,30 @@ document.querySelectorAll('.zone, .hand').forEach(zone => {
     card.addEventListener('dblclick', zoomCard);
     e.currentTarget.appendChild(card);
 
-    // Remove from original zone
+    // Remove from origin
     const originEl = document.getElementById(origin);
-    const original = Array.from(originEl.querySelectorAll('img')).find(img => img.src === url);
+    const original = [...originEl.querySelectorAll('img')].find(img => img.src === url);
     if (original) original.remove();
   });
 });
 
-// === TAP (only in play zones) ===
+// === TAP ===
 function tapCard(e) {
   const card = e.currentTarget;
-  const zoneId = card.parentElement.id.toLowerCase();
-  if (zoneId.includes('graveyard') || zoneId.includes('exile')) return;
-
+  const zone = card.parentElement.id;
+  if (zone.includes('graveyard') || zone.includes('exile')) return;
   const tapped = card.classList.toggle('tapped');
   card.style.transform = tapped ? 'rotate(90deg)' : 'rotate(0deg)';
 }
 
-// === RIGHT-CLICK TO MOVE CARD ===
+// === RIGHT-CLICK TO MOVE ===
 function openCardMenu(e) {
   e.preventDefault();
   const card = e.currentTarget;
   const action = prompt("Move to: battlefield / graveyard / exile / hand / cancel", "cancel");
-  const zones = document.querySelectorAll('.zone, .hand');
-
   if (!action || action === 'cancel') return;
 
+  const zones = document.querySelectorAll('.zone, .hand');
   for (const zone of zones) {
     if (zone.id.toLowerCase().includes(action.toLowerCase())) {
       const clone = card.cloneNode(true);
@@ -185,14 +196,13 @@ function openCardMenu(e) {
   }
 }
 
-// === ZOOM ON DOUBLE CLICK ===
+// === DOUBLE CLICK ZOOM ===
 function zoomCard(e) {
   const modal = document.getElementById('zoomModal');
   const img = document.getElementById('zoomImg');
   img.src = e.currentTarget.src;
   modal.style.display = 'flex';
 }
-
 document.getElementById('zoomModal').addEventListener('click', () => {
   document.getElementById('zoomModal').style.display = 'none';
 });
