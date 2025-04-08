@@ -62,8 +62,9 @@
     </style>
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-      import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+      import { getAuth, signInWithEmailAndPassword, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
+      // Unified Firebase config (matching index.html)
       const firebaseConfig = {
         apiKey: "AIzaSyD2B6KZgtYQPE4K-JF5GQszp5wjNgX6_MY",
         authDomain: "new-chat-8d4f4.firebaseapp.com",
@@ -76,6 +77,9 @@
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
+
+      // Set persistence explicitly (defaults to local)
+      setPersistence(auth, browserLocalPersistence).catch(console.error);
 
       document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('login-form');
@@ -90,9 +94,9 @@
             await signInWithEmailAndPassword(auth, email, password);
             window.location.href = "/";
           } catch (err) {
-  console.error(err); // ← helpful for debugging
-  errorEl.textContent = `Error: ${err.code || err.message}`;
-}
+            console.error(err);
+            errorEl.textContent = `Error: ${err.code || err.message}`;
+          }
         });
       });
     </script>
