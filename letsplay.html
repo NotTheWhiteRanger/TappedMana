@@ -5,6 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TappedMana — Let's Play</title>
   <link rel="stylesheet" href="css/letsplay.css" />
+  <style>
+    /* 3D Gameboard Perspective Enhancements */
+    #gameboard {
+      perspective: 2000px;
+      transform-style: preserve-3d;
+    }
+
+    .player-container {
+      transform: rotateX(10deg);
+      transform-origin: center top;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .top {
+      transform: rotateX(-10deg);
+      transform-origin: center bottom;
+    }
+
+    .card {
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.1) translateY(-6px) rotateZ(1deg);
+    }
+  </style>
 </head>
 <body>
   <div id="gameboard">
