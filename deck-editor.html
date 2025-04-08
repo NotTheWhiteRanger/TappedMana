@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deck Editor | TappedMana</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #cbd5e1, #e2e8f0);
+      color: #1e293b;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background-color: #1e3a8a;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .ms-u { color: #60a5fa; }
+    .ms-w { color: #facc15; }
+    .ms-c { color: #9ca3af; }
+    .ms-b { color: #6b7280; }
+    .ms-r { color: #f87171; }
+    .ms-g { color: #34d399; }
+    main {
+      display: flex;
+      height: calc(95vh - 80px);
+      padding: 1.5rem;
+      gap: 1.5rem;
+      box-sizing: border-box;
+    }
+    .deck-side, .browser-side {
+      display: flex;
+      flex-direction: column;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 6px 20px rgba(30, 58, 138, 0.1);
+      overflow: hidden;
+    }
+    .deck-side {
+      flex: 1;
+      background: #e0e7ff;
+      border: 1px solid #c7d2fe;
+    }
+    .browser-side {
+      flex: 2;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+    #deckCards {
+      flex-grow: 1;
+      border: 2px dashed #3b82f6;
+      box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.25);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      background: #e2e8f0;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+    .deck-card-item {
+      background: #e0f2fe;
+      border-radius: 6px;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .deck-card-item button {
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .filters {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .results {
+      flex-grow: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .card-preview img {
+      width: 100%;
+      max-width: 180px;
+      border-radius: 6px;
+      cursor: grab;
+    }
+    .card-preview img:hover {
+      transform: scale(1.03);
+      transition: transform 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      TappedMana
+      <span class="ms ms-u"></span>
+      <span class="ms ms-w"></span>
+      <span class="ms ms-c"></span>
+      <span class="ms ms-b"></span>
+      <span class="ms ms-r"></span>
+      <span class="ms ms-g"></span>
+    </div>
+  </header>
+  <main>
+    <div class="deck-side">
+      <h2>Your Deck</h2>
+      <form id="deckForm">
+        <label for="title">Deck Title</label>
+        <input type="text" id="title" />
+
+        <label for="commander">Commander</label>
+        <input type="text" id="commander" />
+
+        <button type="submit">Save Deck</button>
+      </form>
+      <div id="deckCards"></div>
+    </div>
+
+    <div class="browser-side">
+      <div class="filters">
+        <input type="text" id="cardSearch" placeholder="Search cards...">
+        <select id="colorFilter">
+          <option value="">All Colors</option>
+          <option value="c:w">White</option>
+          <option value="c:u">Blue</option>
+          <option value="c:b">Black</option>
+          <option value="c:r">Red</option>
+          <option value="c:g">Green</option>
+        </select>
+      </div>
+      <div id="cardResults" class="results"></div>
+    </div>
+  </main>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
+      authDomain: "new-chat-8d4f4.firebaseapp.com",
+      databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
+      projectId: "new-chat-8d4f4",
+      storageBucket: "new-chat-8d4f4.appspot.com",
+      messagingSenderId: "998012770880",
+      appId: "1:998012770880:web:0b9cf74d0a92836b65a6d4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const deckId = new URLSearchParams(window.location.search).get("id");
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return alert("Please log in");
+      currentUser = user;
+      const deckRef = ref(db, `users/${user.uid}/decks/${deckId}`);
+
+      get(deckRef).then((snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById("title").value = data.title || "";
+          document.getElementById("commander").value = data.commander || "";
+          if (Array.isArray(data.cards)) {
+            data.cards.forEach(name => addCardToDeck(name));
+          }
+        }
+      });
+
+      document.getElementById("deckForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const cardNames = [...document.querySelectorAll(".deck-card-item")].map(el => el.dataset.name);
+        set(ref(db, `users/${user.uid}/decks/${deckId}`), {
+          title: document.getElementById("title").value,
+          commander: document.getElementById("commander").value,
+          cards: cardNames
+        }).then(() => {
+          alert("Deck saved!");
+        });
+      });
+    });
+
+    function addCardToDeck(name) {
+      const item = document.createElement("div");
+      item.className = "deck-card-item";
+      item.dataset.name = name;
+      item.innerHTML = `${name} <button onclick="this.parentElement.remove()">&times;</button>`;
+      document.getElementById("deckCards").appendChild(item);
+    }
+
+    function loadCards(query) {
+      const container = document.getElementById("cardResults");
+      container.innerHTML = "Loading...";
+      fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+          container.innerHTML = "";
+          (data.data || []).forEach(card => {
+            const imgUrl = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal;
+            if (!imgUrl) return;
+            const wrapper = document.createElement("div");
+            wrapper.className = "card-preview";
+            const img = document.createElement("img");
+            img.src = imgUrl;
+            img.alt = card.name;
+            img.draggable = true;
+            img.ondragstart = (ev) => {
+              ev.dataTransfer.setData("text/plain", card.name);
+            };
+            wrapper.appendChild(img);
+            container.appendChild(wrapper);
+          });
+        });
+    }
+
+    function updateSearch() {
+      const name = document.getElementById("cardSearch").value.trim();
+      const color = document.getElementById("colorFilter").value;
+      const query = `${name} ${color}`.trim();
+      if (query) loadCards(query);
+    }
+
+    document.getElementById("cardSearch").addEventListener("input", updateSearch);
+    document.getElementById("colorFilter").addEventListener("change", updateSearch);
+
+    const deckCards = document.getElementById("deckCards");
+    deckCards.addEventListener("dragover", (e) => e.preventDefault());
+    deckCards.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const name = e.dataTransfer.getData("text/plain");
+      addCardToDeck(name);
+    });
+
+    loadCards("set:neo or set:khm or set:mom or set:one");
+  </script>
+</body>
+</html>
