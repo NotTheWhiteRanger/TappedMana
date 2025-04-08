@@ -6,27 +6,22 @@
   <title>TappedMana — Let's Play</title>
   <link rel="stylesheet" href="css/letsplay.css" />
   <style>
-    /* 3D Gameboard Perspective Enhancements */
     #gameboard {
-      perspective: 2000px;
+      perspective: 1800px;
       transform-style: preserve-3d;
     }
-
     .player-container {
-      transform: rotateX(10deg);
+      transform: rotateX(8deg);
       transform-origin: center top;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-
     .top {
-      transform: rotateX(-10deg);
+      transform: rotateX(-8deg);
       transform-origin: center bottom;
     }
-
     .card {
-      transition: transform 0.3s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-
     .card:hover {
       transform: scale(1.1) translateY(-6px) rotateZ(1deg);
     }
@@ -73,7 +68,6 @@
     </div>
   </div>
 
-  <!-- Zoom Modal -->
   <div id="zoomModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000000aa; justify-content:center; align-items:center; z-index:1000;">
     <img id="zoomImg" src="" style="max-height:90vh; max-width:90vw; border-radius:8px; box-shadow:0 0 20px #000;" />
   </div>
