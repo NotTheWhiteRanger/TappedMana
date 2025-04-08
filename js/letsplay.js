@@ -134,14 +134,15 @@ document.querySelectorAll('.zone, .hand').forEach(zone => {
 
     const playerNum = target.match(/\d+/)?.[0];
     const isMainPhase = ["Main 1", "Main 2"].includes(phases[currentPhase]);
+    const isManaZone = target.includes("manaZone");
     const isSamePlayer = origin.includes(playerNum);
 
-    if (target.includes("battlefield") && isLand && hasPlayedLandThisTurn[playerNum]) {
+    if (isLand && isManaZone && hasPlayedLandThisTurn[playerNum]) {
       alert("You already played a land this turn.");
       return;
     }
 
-    if (isLand && target.includes("battlefield") && isMainPhase && isSamePlayer) {
+    if (isLand && isManaZone && isMainPhase && isSamePlayer) {
       hasPlayedLandThisTurn[playerNum] = true;
     }
 
@@ -157,7 +158,6 @@ document.querySelectorAll('.zone, .hand').forEach(zone => {
     card.addEventListener('dblclick', zoomCard);
     e.currentTarget.appendChild(card);
 
-    // Remove from origin
     const originEl = document.getElementById(origin);
     const original = [...originEl.querySelectorAll('img')].find(img => img.src === url);
     if (original) original.remove();
