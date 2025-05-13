@@ -23,8 +23,10 @@
       .searchbar input[type="text"] { width: 60%; padding: 0.5rem; border: none; border-radius: 0.5rem; }
       .searchbar button { padding: 0.5rem 1rem; margin-left: 0.5rem; border: none; border-radius: 0.5rem; background-color: #2563eb; color: #fff; cursor: pointer; }
       .dropdown { position: absolute; top: 100%; left: 15%; width: 62%; background: #fff; border: 1px solid #ccc; border-top: none; max-height: 300px; overflow-y: auto; z-index: 1000; }
-      .dropdown-item { padding: 0.5rem; border-bottom: 1px solid #eee; cursor: pointer; }
+      .dropdown-item { padding: 0.5rem; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; }
       .dropdown-item:hover { background-color: #f3f4f6; }
+      .dropdown-item img { width: 40px; height: auto; margin-right: 0.5rem; }
+      .card-info { line-height: 1.2; }
       nav a { margin-left: 1.5rem; text-decoration: none; color: #e0f2fe; font-weight: bold; transition: color 0.3s; }
       nav a:hover { color: #3b82f6; }
       .hero { text-align: center; padding: 4rem 1rem 2rem; }
@@ -59,7 +61,7 @@
         <span class="ms ms-g"></span>
       </div>
       
-      <form id="card-search-form" class="searchbar" action="#">
+      <form id="card-search-form" class="searchbar" action="#" onsubmit="return false;">
         <input id="card-search-input" type="text" name="q" placeholder="Search cards..." autocomplete="off" />
         <button type="submit">Search</button>
         <div id="search-dropdown" class="dropdown"></div>
@@ -145,7 +147,6 @@
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
 
-      // Set persistence explicitly (defaults to local)
       setPersistence(auth, browserLocalPersistence).catch(console.error);
 
       const nav = document.querySelector("nav");
@@ -174,83 +175,66 @@
       }
     </script>
 
-    <!-- Scryfall Card Search Dropdown Integration -->
-    <script type="module">
+    <!-- Scryfall Card Search Dropdown Integration with Debounce -->
+    <script>
       const input = document.getElementById('card-search-input');
       const dropdown = document.getElementById('search-dropdown');
+      let debounceTimer = null;
 
       input.addEventListener('input', () => {
-        const query = input.value.trim();
-        if (!query) {
-          dropdown.innerHTML = '';
-          return;
-        }
-
-        fetch('https://api.scryfall.com/cards/search?q=' + encodeURIComponent(query))
-          .then(response => response.json())
-          .then(data => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(async () => {
+          const query = input.value.trim();
+          if (!query) {
             dropdown.innerHTML = '';
-            if (data.data && data.data.length > 0) {
-              data.data.slice(0, 10).forEach(card => {
+            return;
+          }
+
+          try {
+            const res = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(query)}&limit=10`);
+            const data = await res.json();
+            if (data.object === 'error') throw new Error(data.details);
+
+            dropdown.innerHTML = '';
+            if (data.data.length) {
+              data.data.forEach(card => {
                 const item = document.createElement('div');
-                item.classList.add('dropdown-item');
+                item.className = 'dropdown-item';
 
-                let imageUrl = '';
-                if (card.image_uris && card.image_uris.small) {
-                  imageUrl = card.image_uris.small;
-                } else if (
-                  card.card_faces &&
-                  card.card_faces[0].image_uris &&
-                  card.card_faces[0].image_uris.small
-                ) {
-                  imageUrl = card.card_faces[0].image_uris.small;
-                }
+                // Determine image URL
+                let imageUrl = card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || '';
 
-                let colorsHTML = '';
-                if (card.colors && card.colors.length > 0) {
-                  colorsHTML = card.colors.map(color => {
-                    let cls = '';
-                    switch(color) {
-                      case 'W': cls = 'ms ms-w'; break;
-                      case 'U': cls = 'ms ms-u'; break;
-                      case 'B': cls = 'ms ms-b'; break;
-                      case 'R': cls = 'ms ms-r'; break;
-                      case 'G': cls = 'ms ms-g'; break;
-                      default: cls = 'ms';
-                    }
-                    return `<span class="${cls}">${color}</span>`;
-                  }).join(' ');
-                } else {
-                  colorsHTML = 'Colorless';
-                }
+                // Truncate oracle text
+                const oracleSnippet = card.oracle_text ? card.oracle_text.slice(0, 60) + (card.oracle_text.length > 60 ? '…' : '') : '';
 
                 item.innerHTML = `
-                  <div style="display: flex; align-items: center;">
-                    ${
-                      imageUrl
-                        ? `<img src="${imageUrl}" alt="${card.name}" style="width:40px; margin-right:0.5rem;">`
-                        : ''
-                    }
-                    <div>
-                      <strong>${card.name}</strong><br>
-                      <span>Mana Value: ${card.cmc}</span><br>
-                      <span>Colors: ${colorsHTML}</span>
-                    </div>
+                  ${imageUrl ? `<img src="${imageUrl}" alt="${card.name}" />` : ''}
+                  <div class="card-info">
+                    <strong>${card.name}</strong><br/>
+                    <span class="mana-cost">${card.mana_cost || ''}</span><br/>
+                    <small>${oracleSnippet}</small>
                   </div>
                 `;
+
+                // On click, fill input and clear dropdown
                 item.addEventListener('click', () => {
                   input.value = card.name;
                   dropdown.innerHTML = '';
                 });
+
                 dropdown.appendChild(item);
               });
             } else {
               dropdown.innerHTML = '<div class="dropdown-item">No cards found.</div>';
             }
-          })
-          .catch(err => console.error(err));
+          } catch (err) {
+            console.error('Scryfall error:', err);
+            dropdown.innerHTML = `<div class="dropdown-item error">Error: ${err.message}</div>`;
+          }
+        }, 300);
       });
 
+      // Close dropdown when clicking outside
       document.addEventListener('click', (e) => {
         if (!document.getElementById('card-search-form').contains(e.target)) {
           dropdown.innerHTML = '';
@@ -259,3 +243,4 @@
     </script>
   </body>
 </html>
+
