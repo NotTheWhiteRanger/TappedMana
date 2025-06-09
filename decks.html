@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Your Decks | TappedMana</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googlenos.com/css2?family=Roboto:wght@400;700&display=swap" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" />
     <link rel="stylesheet" href="/css/style.css" />
     <style>
@@ -217,20 +217,8 @@
       &copy; 2025 TappedMana. Built by players, for players.
     </footer>
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
-      import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyDwKnA0x8VGYk4CLiqPRYRL5xMy4Zdpu3c",
-        authDomain: "new-chat-8d4f4.firebaseapp.com",
-        databaseURL: "https://new-chat-8d4f4-default-rtdb.firebaseio.com",
-        projectId: "new-chat-8d4f4",
-        storageBucket: "new-chat-8d4f4.appspot.com",
-        messagingSenderId: "998012770880",
-        appId: "1:998012770880:web:0b9cf74d0a92836b65a6d4"
-      };
+    
+      
 
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
