@@ -41,7 +41,7 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
     import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
-    // Firebase config (from your project)
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCWtqzh5k15SuU7BeY1p_2tK5YAMN8q3g4",
       authDomain: "tappedmana-aaf06.firebaseapp.com",
@@ -54,7 +54,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Session and player
+    // Session and player info
     const sessionId = 'default';
     const gameRef = ref(db, `games/${sessionId}`);
     const playerId = Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -62,70 +62,54 @@
     const playerAngle = prompt('Enter your angle (0,90,180,270):');
     set(ref(db, `games/${sessionId}/players/${playerId}`), { name: playerName, angle: playerAngle });
 
+    // Deck options
+    const decks = {
+      spells: ['Opt','Brainstorm','Ponder','Counterspell','Spell Pierce','Island','Island','Island','Steam Vents','Steam Vents'],
+      burn: ['Lightning Bolt','Shock','Shock','Shock','Mountain','Mountain','Mountain','Opt','Skewer the Critics','Rift Bolt']
+    };
+    let deckChoice = prompt('Choose a deck: spells or burn').toLowerCase();
+    if (!(deckChoice in decks)) deckChoice = 'spells';
+
     // Local state
     let state = { deck: [], graveyard: [], exile: [], board: {}, hands: {} };
 
-    // UI elements
-    const zones = {
-      hand: document.getElementById('hand'),
-      board: document.getElementById('board'),
-      deck: document.getElementById('deck'),
-      graveyard: document.getElementById('graveyard'),
-      exile: document.getElementById('exile')
-    };
-    const counts = {
-      deck: document.getElementById('deck-count'),
-      graveyard: document.getElementById('graveyard-count'),
-      exile: document.getElementById('exile-count')
-    };
+    // UI refs
+    const zones = { hand: document.getElementById('hand'), board: document.getElementById('board'), deck: document.getElementById('deck'), graveyard: document.getElementById('graveyard'), exile: document.getElementById('exile') };
+    const counts = { deck: document.getElementById('deck-count'), graveyard: document.getElementById('graveyard-count'), exile: document.getElementById('exile-count') };
     const modal = document.getElementById('list-modal');
     const modalTitle = document.getElementById('list-modal-title');
     const listHand = document.getElementById('list-hand');
     const modalClose = document.getElementById('list-modal-close');
 
-    // Fetch card art
+    // Fetch art
     async function fetchCardImage(name) {
-      try {
-        const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
-        const json = await res.json();
-        return json.image_uris?.normal || '';
-      } catch {
-        return '';
-      }
+      const res = await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);
+      const json = await res.json();
+      return json.image_uris?.normal || '';
     }
 
-    // Render UI from state
+    // Render UI
     function render() {
-      // Clear hand & board
-      zones.hand.querySelectorAll('.card').forEach(c => c.remove());
-      zones.board.querySelectorAll('.card').forEach(c => c.remove());
-      // Update counts
+      zones.hand.querySelectorAll('.card').forEach(c=>c.remove());
+      zones.board.querySelectorAll('.card').forEach(c=>c.remove());
       counts.deck.textContent = state.deck.length;
       counts.graveyard.textContent = state.graveyard.length;
       counts.exile.textContent = state.exile.length;
-      // Draw hand for this player
       const hand = state.hands[playerId] || [];
       hand.forEach(data => zones.hand.appendChild(createCard(data)));
-      // Draw board cards
-      Object.values(state.board).forEach(({ id, name, x, y }) => {
-        const card = createCard({ id, name });
-        card.style.position = 'absolute';
-        card.style.left = x + 'px';
-        card.style.top = y + 'px';
+      Object.values(state.board).forEach(({id,name,x,y})=>{
+        const card = createCard({id,name});
+        card.style.position='absolute';card.style.left=x+'px';card.style.top=y+'px';
         zones.board.appendChild(card);
       });
     }
 
-    // Sync state
+    // Sync
     onValue(gameRef, snap => {
       const val = snap.val();
       if (!val) {
-        // Initialize deck
-        const precon = [
-          'Opt','Lightning Bolt','Island','Mountain','Shock','Brainstorm',
-          'Ponder','Counterspell','Steam Vents','Spell Pierce'
-        ].map((n,i) => ({ id: i+1, name: n }));
-        state = { deck: precon, graveyard: [], exile: [], board: {}, hands: { [playerId]: [] } };
+        const initial = decks[deckChoice].map((n,i)=>({id:i+1,name:n}));
+        state = { deck: initial, graveyard: [], exile: [], board: {}, hands: {[playerId]: []} };
         set(gameRef, state);
       } else {
         state = val;
@@ -133,56 +117,47 @@
       render();
     });
 
-    // Create card element
-    function createCard({ id, name }) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.dataset.id = id;
-      card.dataset.name = name;
-      card.draggable = true;
-      const label = document.createElement('div');
-      label.className = 'label';
-      label.textContent = name;
-      card.appendChild(label);
-      fetchCardImage(name).then(url => { if (url) card.style.backgroundImage = `url(${url})`; });
-      card.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', id));
-      card.addEventListener('dblclick', () => card.classList.toggle('tapped'));
-      card.addEventListener('contextmenu', e => { e.preventDefault(); card.classList.toggle('face-down'); });
+    // Card creator
+    function createCard({id,name}){
+      const card=document.createElement('div');card.className='card';card.dataset.id=id;card.dataset.name=name;card.draggable=true;
+      const label=document.createElement('div');label.className='label';label.textContent=name;card.appendChild(label);
+      fetchCardImage(name).then(url=>{if(url)card.style.backgroundImage=`url(${url})`;});
+      card.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',id));
+      card.addEventListener('dblclick',()=>card.classList.toggle('tapped'));
+      card.addEventListener('contextmenu',e=>{e.preventDefault();card.classList.toggle('face-down');});
       return card;
     }
 
     // Drop handlers
-    ['hand','board','graveyard','exile'].forEach(zoneName => {
-      const zone = zones[zoneName];
-      zone.addEventListener('dragover', e => e.preventDefault());
-      zone.addEventListener('drop', e => {
+    ['hand','board','graveyard','exile'].forEach(zoneName=>{
+      const zone=zones[zoneName];
+      zone.addEventListener('dragover',e=>e.preventDefault());
+      zone.addEventListener('drop',e=>{
         e.preventDefault();
-        const id = e.dataTransfer.getData('text/plain');
-        const x = zoneName === 'board' ? e.clientX - zone.getBoundingClientRect().left : null;
-        const y = zoneName === 'board' ? e.clientY - zone.getBoundingClientRect().top : null;
-        // Remove from hand
-        const hand = state.hands[playerId] || [];
-        const idx = hand.findIndex(c => c.id == id);
-        if (idx < 0) return;
-        const card = hand.splice(idx, 1)[0];
-        if (zoneName === 'board') state.board[Date.now()] = { ...card, x, y };
-        else if (zoneName === 'graveyard') state.graveyard.push(card);
-        else if (zoneName === 'exile') state.exile.push(card);
-        state.hands[playerId] = hand;
-        update(gameRef, state);
+        const id=e.dataTransfer.getData('text/plain');
+        const x=zoneName==='board'?e.clientX-zone.getBoundingClientRect().left:null;
+        const y=zoneName==='board'?e.clientY-zone.getBoundingClientRect().top:null;
+        const hand=state.hands[playerId]||[];
+        const idx=hand.findIndex(c=>c.id==id);
+        if(idx<0) return;
+        const card=hand.splice(idx,1)[0];
+        if(zoneName==='board') state.board[Date.now()]= {...card,x,y};
+        else if(zoneName==='graveyard') state.graveyard.push(card);
+        else if(zoneName==='exile') state.exile.push(card);
+        state.hands[playerId]=hand;
+        update(gameRef,state);
       });
     });
 
-    // Draw from deck
-    zones.deck.addEventListener('click', () => {
-      if (!state.deck.length) return;
-      const card = state.deck.shift();
-      state.hands[playerId] = (state.hands[playerId] || []).concat(card);
-      update(gameRef, state);
+    // Draw
+    zones.deck.addEventListener('click',()=>{
+      if(!state.deck.length) return;
+      const card=state.deck.shift();
+      state.hands[playerId]= (state.hands[playerId]||[]).concat(card);
+      update(gameRef,state);
     });
 
-    // Graveyard modal
-    modalClose.addEventListener('click', () => modal.style.display = 'none');
+    modalClose.addEventListener('click',()=>modal.style.display='none');
   </script>
 </body>
 </html>
