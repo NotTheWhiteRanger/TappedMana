@@ -162,6 +162,67 @@
             border: 2px dashed rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.02);
+            padding: 10px;
+        }
+
+        .battlefield-creatures {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .battlefield-creature {
+            width: 80px;
+            height: 112px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            background: #2c3e50;
+            border: 2px solid rgba(76, 175, 80, 0.6);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .battlefield-creature:hover {
+            transform: translateY(-5px) scale(1.05);
+            border-color: rgba(76, 175, 80, 1);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+            z-index: 10;
+        }
+
+        .battlefield-creature.tapped {
+            transform: rotate(90deg);
+            opacity: 0.7;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .battlefield-creature img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .creature-stats {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .battlefield-empty {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
         }
 
         .battlefield-center {
@@ -689,13 +750,16 @@
             
             <div class="game-controls">
                 <button class="control-btn" onclick="drawCard()">Draw</button>
+                <button class="control-btn secondary" onclick="untapAllCreatures()">Untap All</button>
                 <button class="control-btn secondary" onclick="endTurn()">End Turn</button>
                 <button class="control-btn secondary" onclick="rollD20()">Roll D20</button>
             </div>
 
             <div class="battlefield-zones">
                 <div class="opponent-battlefield" id="opponentBattlefield">
-                    <div style="color: rgba(255,255,255,0.4); font-size: 14px;">Opponent's Battlefield</div>
+                    <div class="battlefield-creatures" id="opponentCreatures">
+                        <div class="battlefield-empty">Opponent's Battlefield</div>
+                    </div>
                 </div>
 
                 <div class="battlefield-center">
@@ -706,7 +770,9 @@
                 </div>
 
                 <div class="player-battlefield" id="playerBattlefield">
-                    <div style="color: rgba(255,255,255,0.4); font-size: 14px;">Your Battlefield</div>
+                    <div class="battlefield-creatures" id="playerCreatures">
+                        <div class="battlefield-empty">Your Battlefield</div>
+                    </div>
                 </div>
             </div>
 
@@ -1082,6 +1148,11 @@
                 // Move card to appropriate zone
                 if (isCreature(card)) {
                     addCreatureToBattlefield(card);
+                } else if (card.type_line && (card.type_line.toLowerCase().includes('artifact') || 
+                          card.type_line.toLowerCase().includes('enchantment') || 
+                          card.type_line.toLowerCase().includes('planeswalker'))) {
+                    // Permanents go to battlefield
+                    addPermanentToBattlefield(card);
                 } else {
                     // Instants and sorceries go to graveyard after resolving
                     gameState.players[1].graveyard++;
@@ -1098,6 +1169,55 @@
             
             updateDisplay();
             updateAllCardPlayability();
+        }
+
+        function addPermanentToBattlefield(permanent) {
+            gameState.battlefield[1].push(permanent);
+            
+            // Create visual permanent element (similar to creature but different styling)
+            const permanentElement = createBattlefieldPermanent(permanent);
+            const battlefieldContainer = document.getElementById('playerCreatures');
+            
+            // Remove empty message if it exists
+            const emptyMessage = battlefieldContainer.querySelector('.battlefield-empty');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+            
+            battlefieldContainer.appendChild(permanentElement);
+            showNotification(`${permanent.name} enters the battlefield`);
+        }
+
+        function createBattlefieldPermanent(permanent) {
+            const permanentDiv = document.createElement('div');
+            permanentDiv.className = 'battlefield-creature'; // Reuse creature styling
+            permanentDiv.dataset.cardId = permanent.id;
+            
+            // Different border color for non-creatures
+            if (!isCreature(permanent)) {
+                permanentDiv.style.borderColor = 'rgba(255, 193, 7, 0.6)'; // Gold for artifacts/enchantments
+            }
+            
+            const img = document.createElement('img');
+            img.src = permanent.image_uris?.small || permanent.image_uris?.normal || '';
+            img.alt = permanent.name;
+            img.onerror = () => {
+                permanentDiv.innerHTML = `<div class="card-loading">${permanent.name}</div>`;
+            };
+            permanentDiv.appendChild(img);
+            
+            // Add click handlers
+            permanentDiv.onclick = () => showCardPreview(permanent);
+            permanentDiv.oncontextmenu = (e) => {
+                e.preventDefault();
+                if (isCreature(permanent)) {
+                    tapCreature(permanentDiv);
+                } else {
+                    tapCreature(permanentDiv); // Some artifacts can tap too
+                }
+            };
+            
+            return permanentDiv;
         }
 
         function addLandToBattlefield(land) {
@@ -1126,8 +1246,65 @@
 
         function addCreatureToBattlefield(creature) {
             gameState.battlefield[1].push(creature);
+            
+            // Create visual creature element
+            const creatureElement = createBattlefieldCreature(creature);
+            const battlefieldContainer = document.getElementById('playerCreatures');
+            
+            // Remove empty message if it exists
+            const emptyMessage = battlefieldContainer.querySelector('.battlefield-empty');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+            
+            battlefieldContainer.appendChild(creatureElement);
             showNotification(`${creature.name} enters the battlefield`);
-            // TODO: Add visual creature to battlefield
+        }
+
+        function createBattlefieldCreature(creature) {
+            const creatureDiv = document.createElement('div');
+            creatureDiv.className = 'battlefield-creature';
+            creatureDiv.dataset.cardId = creature.id;
+            
+            const img = document.createElement('img');
+            img.src = creature.image_uris?.small || creature.image_uris?.normal || '';
+            img.alt = creature.name;
+            img.onerror = () => {
+                creatureDiv.innerHTML = `<div class="card-loading">${creature.name}</div>`;
+            };
+            creatureDiv.appendChild(img);
+            
+            // Add power/toughness if it's a creature
+            if (creature.power && creature.toughness) {
+                const stats = document.createElement('div');
+                stats.className = 'creature-stats';
+                stats.textContent = `${creature.power}/${creature.toughness}`;
+                creatureDiv.appendChild(stats);
+            }
+            
+            // Add click handlers
+            creatureDiv.onclick = () => showCardPreview(creature);
+            creatureDiv.oncontextmenu = (e) => {
+                e.preventDefault();
+                tapCreature(creatureDiv);
+            };
+            
+            return creatureDiv;
+        }
+
+        function tapCreature(creatureElement) {
+            creatureElement.classList.toggle('tapped');
+            const cardName = creatureElement.querySelector('img').alt;
+            const action = creatureElement.classList.contains('tapped') ? 'tapped' : 'untapped';
+            showNotification(`${cardName} ${action}`);
+        }
+
+        function untapAllCreatures() {
+            const creatures = document.querySelectorAll('#playerCreatures .battlefield-creature');
+            creatures.forEach(creature => {
+                creature.classList.remove('tapped');
+            });
+            showNotification('All creatures untapped');
         }
 
         function updateAllCardPlayability() {
@@ -1515,7 +1692,7 @@
             // Auto-show hand on start
             setTimeout(() => {
                 toggleHand();
-                showNotification('Welcome! Right-click cards to play them. Lands give mana, spells cost mana.');
+                showNotification('Welcome! Right-click cards to play them. Right-click creatures to tap/untap.');
             }, 1000);
         });
 
