@@ -1,202 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Simple MTG Table</title>
+  <meta charset="UTF-8" />
+  <title>Simple MTG Table with Precon & Art Preview</title>
   <style>
     body, html { margin: 0; padding: 0; height: 100%; }
     #game { display: grid; grid-template-areas: "board" "hand"; grid-template-rows: 1fr auto; height: 100vh; }
     #board { grid-area: board; position: relative; background: #2d7b2d; }
 
-    /* Hand styling: horizontal cushion only */
-    #hand {
-      grid-area: hand;
-      background: #444;
-      padding: 10px 20px;       /* horizontal cushion */
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      width: 100%;
-      min-height: 140px;
-      justify-content: flex-start;  /* align cards to left */
-      align-items: center;
-      scrollbar-width: thin;
-    }
-    #hand::-webkit-scrollbar { height: 8px; }
-    #hand::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+    /* Hand styling */
+    #hand { grid-area: hand; background: #444; padding: 10px 20px; display: flex; gap: 10px; overflow-x: auto; width: 100%; min-height: 140px; justify-content: flex-start; align-items: center; }
 
-    /* Zone tiles */
+    /* Zones */
     #zones-wrapper { display: flex; gap: 20px; position: absolute; top: 10px; left: 10px; }
     .zone { border: 2px dashed #aaa; padding: 10px; background: rgba(255,255,255,0.2); position: relative; cursor: pointer; }
-    /* Fixed size for pile zones */
     #deck, #graveyard, #exile { width: 100px; height: 140px; }
     .zone-title { text-align: center; font-weight: bold; color: white; margin-bottom: 5px; pointer-events: none; }
     .count { position: absolute; bottom: 4px; right: 4px; font-size: 12px; color: white; background: rgba(0,0,0,0.6); padding: 2px 4px; border-radius: 4px; pointer-events: none; }
 
-    /* Card styling */
-    .card { width: 80px; height: 120px; border: 1px solid #000; border-radius: 5px; background: white; position: relative; user-select: none; cursor: grab; }
+    /* Cards */
+    .card { width: 80px; height: 120px; border: 1px solid #000; border-radius: 5px; background: white; background-size: cover; background-position: center; position: relative; user-select: none; cursor: grab; }
     .card.face-down { background: #333; }
-    .card .label { position: absolute; bottom: 5px; left: 5px; font-size: 12px; color: black; }
+    .card .label { position: absolute; bottom: 5px; left: 5px; font-size: 12px; color: black; background: rgba(255,255,255,0.7); padding: 2px; border-radius: 2px; }
     .card.tapped { transform: rotate(90deg); }
 
-    /* Modal List display */
-    #list-modal {
-      position: absolute;
-      top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: #fff; border: 1px solid #000;
-      padding: 10px;
-      width: 80%; max-width: 600px; height: 200px;
-      display: none; z-index: 100;
-    }
-    #list-modal h3 { margin: 0 0 10px 0; }
+    /* Modal lists */
+    #list-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; border: 1px solid #000; padding: 10px; width: 80%; max-width: 600px; height: 200px; display: none; z-index: 100; }
+    #list-modal h3 { margin: 0 0 10px; }
     #list-hand { display: flex; gap: 10px; overflow-x: auto; align-items: center; }
     #list-modal button { margin-top: 10px; float: right; }
+
+    /* Preview modal */
+    #preview-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 200; }
+    #preview-modal img { max-width: 80%; max-height: 80%; border: 5px solid #fff; border-radius: 8px; }
   </style>
 </head>
 <body>
   <div id="game">
     <div id="board">
       <div id="zones-wrapper">
-        <div id="deck" class="zone">
-          <div class="zone-title">Deck<br>(click to draw)</div>
-          <div class="count" id="deck-count">0</div>
-        </div>
-        <div id="graveyard" class="zone">
-          <div class="zone-title">Graveyard<br>(click to view)</div>
-          <div class="count" id="graveyard-count">0</div>
-        </div>
-        <div id="exile" class="zone">
-          <div class="zone-title">Exile<br>(click to view)</div>
-          <div class="count" id="exile-count">0</div>
-        </div>
+        <div id="deck" class="zone"><div class="zone-title">Deck<br>(click to draw)</div><div class="count" id="deck-count">0</div></div>
+        <div id="graveyard" class="zone"><div class="zone-title">Graveyard<br>(click to view)</div><div class="count" id="graveyard-count">0</div></div>
+        <div id="exile" class="zone"><div class="zone-title">Exile<br>(click to view)</div><div class="count" id="exile-count">0</div></div>
       </div>
     </div>
-    <div id="hand">
-      <div class="zone-title" style="color: #fff; pointer-events: none;">Your Hand</div>
-    </div>
-    <div id="list-modal">
-      <h3 id="list-modal-title"></h3>
-      <div id="list-hand"></div>
-      <button id="list-modal-close">Close</button>
-    </div>
+    <div id="hand"><div class="zone-title" style="color: #fff; pointer-events: none;">Your Hand</div></div>
+    <div id="list-modal"><h3 id="list-modal-title"></h3><div id="list-hand"></div><button id="list-modal-close">Close</button></div>
+    <div id="preview-modal"><img id="preview-img" src="" alt="card preview"></div>
   </div>
 
   <script>
-    const deck = [];
-    const graveyardCards = [];
-    const exileCards = [];
-    for (let i = 1; i <= 60; i++) deck.push({ id: i, name: `Card ${i}` });
+    const preconDeck=[{id:1,name:'Opt'},{id:2,name:'Lightning Bolt'},{id:3,name:'Island'},{id:4,name:'Mountain'},{id:5,name:'Shock'},{id:6,name:'Brainstorm'},{id:7,name:'Ponder'},{id:8,name:'Counterspell'},{id:9,name:'Steam Vents'},{id:10,name:'Spell Pierce'}];
+    const deck=preconDeck.map(c=>({...c}));
+    const graveyardCards=[], exileCards=[];
 
-    const zones = {
-      hand: document.getElementById('hand'),
-      board: document.getElementById('board'),
-      deck: document.getElementById('deck'),
-      graveyard: document.getElementById('graveyard'),
-      exile: document.getElementById('exile'),
-    };
-    const counts = {
-      deck: document.getElementById('deck-count'),
-      graveyard: document.getElementById('graveyard-count'),
-      exile: document.getElementById('exile-count'),
-    };
-    const modal = document.getElementById('list-modal');
-    const modalTitle = document.getElementById('list-modal-title');
-    const listHand = document.getElementById('list-hand');
-    const modalClose = document.getElementById('list-modal-close');
+    const zones={hand:document.getElementById('hand'),board:document.getElementById('board'),deck:document.getElementById('deck'),graveyard:document.getElementById('graveyard'),exile:document.getElementById('exile')};
+    const counts={deck:document.getElementById('deck-count'),graveyard:document.getElementById('graveyard-count'),exile:document.getElementById('exile-count')};
+    const modal=document.getElementById('list-modal'),modalTitle=document.getElementById('list-modal-title');
+    const listHand=document.getElementById('list-hand'),modalClose=document.getElementById('list-modal-close');
+    const previewModal=document.getElementById('preview-modal'),previewImg=document.getElementById('preview-img');
 
-    let currentList = null;
+    async function fetchCardImage(name){try{const res=await fetch(`https://api.scryfall.com/cards/named?exact=${encodeURIComponent(name)}`);const json=await res.json();if(json.image_uris&&json.image_uris.normal)return json.image_uris.normal;console.warn(`No image URI for: ${name}`);return null;}catch(e){console.error('Art fetch error:',e);return null;}}
 
-    function updateCounts() {
-      counts.deck.textContent = deck.length;
-      counts.graveyard.textContent = graveyardCards.length;
-      counts.exile.textContent = exileCards.length;
-    }
+    function updateCounts(){counts.deck.textContent=deck.length;counts.graveyard.textContent=graveyardCards.length;counts.exile.textContent=exileCards.length;}
 
-    function showList(title, list) {
-      currentList = list;
-      modalTitle.textContent = title;
-      listHand.innerHTML = '';
-      list.forEach(data => {
-        const c = createCard(data);
-        c.style.cursor = 'pointer';
-        c.addEventListener('click', () => {
-          const idx = currentList.findIndex(d => d.id === data.id);
-          if (idx !== -1) currentList.splice(idx, 1);
-          const returned = createCard(data);
-          zones.hand.appendChild(returned);
-          zones.hand.scrollLeft = 0; // ensure view starts at left
-          updateCounts();
-          modal.style.display = 'none';
-        });
-        listHand.appendChild(c);
-      });
-      modal.style.display = 'block';
-    }
+    function showList(title,list){modalTitle.textContent=title;listHand.innerHTML='';list.forEach(data=>{const c=createCard(data,true);c.addEventListener('click',()=>{const idx=list.findIndex(d=>d.id===data.id);if(idx!==-1)list.splice(idx,1);zones.hand.appendChild(createCard(data));zones.hand.scrollLeft=0;updateCounts();modal.style.display='none';});listHand.appendChild(c);} );modal.style.display='block';}
+    modalClose.addEventListener('click',()=>modal.style.display='none');
+    previewModal.addEventListener('click',()=>previewModal.style.display='none');
 
-    modalClose.addEventListener('click', () => { modal.style.display = 'none'; });
+    zones.deck.addEventListener('click',()=>{if(!deck.length)return;zones.hand.appendChild(createCard(deck.shift()));zones.hand.scrollLeft=0;updateCounts();});
+    zones.graveyard.addEventListener('click',()=>showList('Graveyard',graveyardCards));
+    zones.exile.addEventListener('click',()=>showList('Exile',exileCards));
 
-    zones.deck.addEventListener('click', () => {
-      if (!deck.length) return;
-      const data = deck.shift();
-      const cardEl = createCard(data);
-      zones.hand.appendChild(cardEl);
-      zones.hand.scrollLeft = 0; // reset scroll
-      updateCounts();
-    });
+    function createCard(data,noDrag=false){const card=document.createElement('div');card.className='card';card.id=`card-${data.id}-${Math.random().toString(36).substr(2,9)}`;card.dataset.id=data.id;card.dataset.name=data.name;if(!noDrag)card.draggable=true;const label=document.createElement('div');label.className='label';label.textContent=data.name;card.appendChild(label);fetchCardImage(data.name).then(url=>{if(url)card.style.backgroundImage=`url(${url})`;});
+      if(!noDrag){card.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',card.id));card.addEventListener('dblclick',()=>card.classList.toggle('tapped'));card.addEventListener('contextmenu',e=>{e.preventDefault();card.classList.toggle('face-down');});}
+      // single click preview
+      card.addEventListener('click',e=>{if(e.detail===1&&!e.shiftKey){e.stopPropagation();if(card.dataset.name){fetchCardImage(card.dataset.name).then(url=>{if(url){previewImg.src=url;previewModal.style.display='flex';}});} }});
+      return card;}
 
-    zones.graveyard.addEventListener('click', () => showList('Graveyard', graveyardCards));
-    zones.exile.addEventListener('click', () => showList('Exile', exileCards));
-
-    function createCard(data) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.id = `card-${data.id}`;
-      card.draggable = true;
-      card.dataset.id = data.id;
-      card.dataset.name = data.name;
-
-      const label = document.createElement('div');
-      label.className = 'label';
-      label.textContent = data.name;
-      card.appendChild(label);
-
-      card.addEventListener('dragstart', e => void e.dataTransfer.setData('text/plain', card.id));
-      card.addEventListener('dblclick', () => card.classList.toggle('tapped'));
-      card.addEventListener('contextmenu', e => { e.preventDefault(); card.classList.toggle('face-down'); });
-      card.addEventListener('click', e => { if (e.shiftKey) card.classList.toggle('face-down'); });
-
-      return card;
-    }
-
-    ['hand', 'board', 'graveyard', 'exile'].forEach(zoneName => {
-      const zone = zones[zoneName];
-      zone.addEventListener('dragover', e => e.preventDefault());
-      zone.addEventListener('drop', e => {
-        e.preventDefault();
-        const id = e.dataTransfer.getData('text/plain');
-        const card = document.getElementById(id);
-        if (!card) return;
-        if (zoneName === 'graveyard' || zoneName === 'exile') e.stopPropagation();
-        [graveyardCards, exileCards].forEach(arr => {
-          const idx = arr.findIndex(d => d.id == card.dataset.id);
-          if (idx !== -1) arr.splice(idx, 1);
-        });
-        if (zoneName === 'board') {
-          const rect = zone.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          card.style.position = 'absolute'; card.style.left = `${x - card.offsetWidth/2}px`;
-          card.style.top = `${y - card.offsetHeight/2}px`; zone.appendChild(card);
-        } else if (zoneName === 'graveyard') {
-          graveyardCards.push({ id: parseInt(card.dataset.id), name: card.dataset.name }); card.remove(); updateCounts();
-        } else if (zoneName === 'exile') {
-          exileCards.push({ id: parseInt(card.dataset.id), name: card.dataset.name }); card.remove(); updateCounts();
-        } else {
-          card.style.position = ''; card.style.left = ''; card.style.top = '';
-          zone.appendChild(card);
-        }
-      });
-    });
+    ['hand','board','graveyard','exile'].forEach(zoneName=>{const zone=zones[zoneName];zone.addEventListener('dragover',e=>e.preventDefault());zone.addEventListener('drop',e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain');const card=document.getElementById(id);if(!card)return;[graveyardCards,exileCards].forEach(arr=>{const idx=arr.findIndex(d=>d.id==card.dataset.id);if(idx!=-1)arr.splice(idx,1);} );if(zoneName==='board'){const data={id:parseInt(card.dataset.id),name:card.dataset.name};card.remove();const newCard=createCard(data);const rect=zone.getBoundingClientRect();const x=e.clientX-rect.left;const y=e.clientY-rect.top;newCard.style.position='absolute';newCard.style.left=`${x}px`;newCard.style.top=`${y}px`;newCard.style.transform='translate(-50%,-50%)';zone.appendChild(newCard);}else if(zoneName==='graveyard'){graveyardCards.push({id:parseInt(card.dataset.id),name:card.dataset.name});card.remove();updateCounts();}else if(zoneName==='exile'){exileCards.push({id:parseInt(card.dataset.id),name:card.dataset.name});card.remove();updateCounts();}else{card.style.position='';card.style.left='';card.style.top='';card.style.transform='';zone.appendChild(card);} });});
 
     updateCounts();
   </script>
